@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="/Users/chuckmosher/workspace/JavaSeisExamples/lib/beta_javaseis.jar"/>
-	<classpathentry kind="lib" path="/Users/chuckmosher/workspace/JavaSeisExamples/lib/edu_mines_jtk.jar"/>
+	<classpathentry kind="lib" path="lib/beta_javaseis.jar"/>
+	<classpathentry kind="lib" path="lib/edu_mines_jtk.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
