@@ -1,5 +1,4 @@
 package org.javaseis.examples.parallel;
-import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.ExecutionException;
 
@@ -74,7 +73,7 @@ public class ExampleParallel2D {
         j = pos[1];
         val = (float)(n1*j + i);
         da3d.getTrace(trc);
-        assertEquals("Match failed at i,j " + i + "," + j,val,trc[0],1e-6);
+        if (Math.abs(val-trc[0]) > 1e-6) throw new RuntimeException("Match failed at i,j " + i + "," + j);
       }
       pc.serialPrint("Transpose Test Completed");
     }
