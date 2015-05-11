@@ -8,6 +8,8 @@ import org.javaseis.volume.ISeismicVolume;
 
 public class ExampleVolumeTool extends StandAloneVolumeTool implements IVolumeTool {
 
+  int volumeCount;
+  
   public static void main(String[] args) {
     ParameterService parms = new ParameterService(args);
     if (parms.getParameter("inputFileSystem") == "null") {
@@ -18,8 +20,14 @@ public class ExampleVolumeTool extends StandAloneVolumeTool implements IVolumeTo
   }
   
   @Override
+  public void parallelInit( ToolContext toolContext ) {
+    volumeCount = 0;
+  }
+  
+  @Override
   public boolean processVolume(ToolContext toolContext, ISeismicVolume input,
       ISeismicVolume output) {
+    System.out.println("Process volume " + volumeCount++);
     output.copyVolume(input);
     return true;
   } 
