@@ -11,43 +11,44 @@ import beta.javaseis.regulargrid.OrientationType;
 import beta.javaseis.regulargrid.RegularGrid;
 
 public class SeismicVolume implements ISeismicVolume, IRegularGrid {
-  
+
   GridDefinition globalGridDefinition, volumeGridDefinition;
-  
+
   IRegularGrid volumeGrid;
-  
+
   DistributedArray volume;
-  
-  public SeismicVolume( IParallelContext pc, GridDefinition grid ) {
+
+  public SeismicVolume(IParallelContext pc, GridDefinition grid) {
     globalGridDefinition = grid;
     AxisDefinition[] axis = new AxisDefinition[3];
     int[] volumeShape = new int[3];
-    for (int i=0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
       axis[i] = globalGridDefinition.getAxis(i);
-      volumeShape[i] = (int)axis[i].getLength();
+      volumeShape[i] = (int) axis[i].getLength();
     }
-    volumeGridDefinition = new GridDefinition( 3, axis );
-    volume = new DistributedArray( pc, volumeShape );
-    volumeGrid = new RegularGrid(volume,volumeGridDefinition,BinGrid.simpleBinGrid(volumeShape[1],volumeShape[2]));
+    volumeGridDefinition = new GridDefinition(3, axis);
+    volume = new DistributedArray(pc, volumeShape);
+    volumeGrid = new RegularGrid(volume, volumeGridDefinition,
+        BinGrid.simpleBinGrid(volumeShape[1], volumeShape[2]));
   }
-  
-  public SeismicVolume( IParallelContext pc, GridDefinition grid, BinGrid binGrid ) {
+
+  public SeismicVolume(IParallelContext pc, GridDefinition grid, BinGrid binGrid) {
     globalGridDefinition = grid;
     AxisDefinition[] axis = new AxisDefinition[3];
     int[] volumeShape = new int[3];
-    for (int i=0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
       axis[i] = globalGridDefinition.getAxis(i);
-      volumeShape[i] = (int)axis[i].getLength();
+      volumeShape[i] = (int) axis[i].getLength();
     }
-    volumeGridDefinition = new GridDefinition( 3, axis );
-    volume = new DistributedArray( pc, volumeShape );
-    volumeGrid = new RegularGrid(volume,volumeGridDefinition,binGrid);
+    volumeGridDefinition = new GridDefinition(3, axis);
+    volume = new DistributedArray(pc, volumeShape);
+    volumeGrid = new RegularGrid(volume, volumeGridDefinition, binGrid);
   }
-  
+
   public DistributedArray getDistributedArray() {
     return volume;
   }
-  
+
   public OrientationType getOrientation() {
     return volumeGrid.getOrientation();
   }
@@ -116,8 +117,20 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
     return volumeGrid.createCopy();
   }
 
+  public void copyVolume(ISeismicVolume source) {
+    if (!source.matches(this))
+      throw new IllegalArgumentException(
+          "Source volume and this volume do not match");
+    this.getDistributedArray().copy(source.getDistributedArray());
+  }
+
   @Override
   public GridDefinition getGlobalGrid() {
     return globalGridDefinition;
+  }
+
+  @Override
+  public boolean matches(ISeismicVolume seismicVolume) {
+    return globalGridDefinition.matches(seismicVolume.getGlobalGrid());
   }
 }

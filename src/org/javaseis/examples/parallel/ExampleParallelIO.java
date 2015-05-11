@@ -41,6 +41,7 @@ public class ExampleParallelIO {
       IDistributedIOService pio = new FileSystemIOService(pc, tmpdir);
       int[] testShape = new int[] { 201, 201, 201, 9, 5 };
       try {
+        if (pio.exists("temp.js")) pio.delete("temp.js");
         pio.create("temp.js", testShape);
         pio.open("temp.js");
       } catch (SeisException ex) {
@@ -112,7 +113,7 @@ public class ExampleParallelIO {
       }
       try {
         pio.close();
-        pio.delete("temp.js");   
+        //pio.delete("temp.js");   
       } catch (SeisException ex) {
         throw new RuntimeException(ex);
       } 
