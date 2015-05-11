@@ -44,7 +44,7 @@ public class ExampleFft3D {
       DistributedArray input = fft3d.getArray();
       // Reshape to the input shape
       input.setShape(shape);
-      // Set the inernal DA iterator to be a trace iterator
+      // Set the internal DA iterator to be a trace iterator
       input.resetTraceIterator();
       
       // Allocate an array long enough to hold a trace
