@@ -1,4 +1,4 @@
-package org.javaseis.examples.parallel;
+package org.javaseis.examples.imaging;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -20,7 +20,7 @@ import beta.javaseis.parallel.ParallelTaskExecutor;
  * disk in parallel, and then read back and verified.
  * 
  */
-public class ExampleParallelIO {
+public class ShotMigIO {
 
   public static void main(String[] args) {
     int ntask = 4;
@@ -41,7 +41,6 @@ public class ExampleParallelIO {
       IDistributedIOService pio = new FileSystemIOService(pc, tmpdir);
       int[] testShape = new int[] { 201, 201, 201, 9, 5 };
       try {
-        if (pio.exists("temp.js")) pio.delete("temp.js");
         pio.create("temp.js", testShape);
         pio.open("temp.js");
       } catch (SeisException ex) {
@@ -113,7 +112,7 @@ public class ExampleParallelIO {
       }
       try {
         pio.close();
-        //pio.delete("temp.js");   
+        pio.delete("temp.js");   
       } catch (SeisException ex) {
         throw new RuntimeException(ex);
       } 
