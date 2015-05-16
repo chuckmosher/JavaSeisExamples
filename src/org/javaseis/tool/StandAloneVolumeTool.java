@@ -17,7 +17,7 @@ import beta.javaseis.parallel.UniprocessorContext;
 
 /**
  * StandAlone volume processing tool handler
- * 
+ *
  * @author chuck
  *
  */
@@ -33,17 +33,16 @@ public class StandAloneVolumeTool implements IVolumeTool {
 
   public static IDistributedIOService ipio, opio;
 
-  public static String inputFileSystem, inputFilePath, outputFileSystem,
-      outputFilePath;
-  
+  public static String inputFileSystem, inputFilePath, outputFileSystem, outputFilePath;
+
   public static boolean output = false;
 
-  public static void exec(ParameterService parameterService, IVolumeTool standAloneTool) {
-    // Create a parameter service
-    ParameterService parms = parameterService;
+  public static void exec(ParameterService parms, IVolumeTool standAloneTool) {
+    // Tool to be run
+    tool = standAloneTool;
     // Set a uniprocessor context
     IParallelContext upc = new UniprocessorContext();
-    toolContext = new ToolContext();
+    toolContext = new ToolContext(parms);
     ipio = null;
     // Open input file if it is requested
     inputFileSystem = parms.getParameter("inputFileSystem", "null");
@@ -56,15 +55,14 @@ public class StandAloneVolumeTool implements IVolumeTool {
         ipio.close();
       } catch (SeisException ex) {
         ex.printStackTrace();
-        throw new RuntimeException("Could not open inputPath: " + inputFilePath
-            + "\n" + "    on inputFileSystem: " + ipio, ex.getCause());
+        throw new RuntimeException("Could not open inputPath: " + inputFilePath + "\n"
+            + "    on inputFileSystem: " + ipio, ex.getCause());
       }
 
     }
     // Run the tool serial initialization step with the provided input
     // GridDefinition
-    toolContext.setParamaterService(parms);
-    tool = standAloneTool;
+    toolContext.setParameterService(parms);
     tool.serialInit(toolContext);
     // Get the output grid definition set by the tool
     GridDefinition outputGrid = toolContext.getOutputGrid();
@@ -84,9 +82,8 @@ public class StandAloneVolumeTool implements IVolumeTool {
           opio.close();
         } catch (SeisException ex) {
           ex.printStackTrace();
-          throw new RuntimeException("Could not create outputPath: "
-              + outputFilePath + "\n" + "    on outputFileSystem: " + opio,
-              ex.getCause());
+          throw new RuntimeException("Could not create outputPath: " + outputFilePath + "\n"
+              + "    on outputFileSystem: " + opio, ex.getCause());
         }
       }
       // Open for both open and create
@@ -94,16 +91,13 @@ public class StandAloneVolumeTool implements IVolumeTool {
         opio.open(outputFilePath);
         GridDefinition currentGrid = opio.getGridDefinition();
         opio.close();
-        if (currentGrid.matches(outputGrid) == false) {
-          throw new RuntimeException("outputFilePath GridDefintion: "
-              + outputGrid + "\n does not match toolContext GridDefinition: "
-              + currentGrid);
-        }
+        if (currentGrid.matches(outputGrid) == false)
+          throw new RuntimeException("outputFilePath GridDefintion: " + outputGrid
+              + "\n does not match toolContext GridDefinition: " + currentGrid);
       } catch (SeisException ex) {
         ex.printStackTrace();
-        throw new RuntimeException("Could not open outputPath: "
-            + outputFilePath + "\n" + "    on outputFileSystem: " + opio,
-            ex.getCause());
+        throw new RuntimeException("Could not open outputPath: " + outputFilePath + "\n"
+            + "    on outputFileSystem: " + opio, ex.getCause());
       }
     }
     // Now run the tool handler which calls the implementor's methods
@@ -122,7 +116,7 @@ public class StandAloneVolumeTool implements IVolumeTool {
   /**
    * StandAlone tool handler for processing regular volumes from JavaSeis
    * datasets
-   * 
+   *
    * @author Chuck Mosher for JavaSeis.org
    */
   public static class StandAloneVolumeTask extends ParallelTask {
@@ -135,47 +129,55 @@ public class StandAloneVolumeTool implements IVolumeTool {
       // Open the input and output file systems - should have been checked by
       // main
       ipio = new FileSystemIOService(pc, inputFileSystem);
-      if (output) opio = new FileSystemIOService(pc, outputFileSystem);
+      if (output) {
+        opio = new FileSystemIOService(pc, outputFileSystem);
+      }
       try {
         ipio.open(inputFilePath);
-        if (output) opio.open(outputFilePath);
+        if (output) {
+          opio.open(outputFilePath);
+        }
       } catch (SeisException ex) {
         throw new RuntimeException(ex.getCause());
       }
       // Get the input and output grids and store in the tool context
       toolContext.setInputGrid(ipio.getGridDefinition());
-      if (output) toolContext.setOutputGrid(opio.getGridDefinition());
+      if (output) {
+        toolContext.setOutputGrid(opio.getGridDefinition());
+      }
       // Call the implementing method for parallel initialization
       tool.parallelInit(toolContext);
       // Create the input and output seismic volumes
-      ISeismicVolume inputVolume = new SeismicVolume(pc,
-          ipio.getGridDefinition());
+      ISeismicVolume inputVolume = new SeismicVolume(pc, ipio.getGridDefinition());
       ipio.setDistributedArray(inputVolume.getDistributedArray());
       ISeismicVolume outputVolume = inputVolume;
       if (output) {
-        outputVolume = new SeismicVolume(pc,
-            opio.getGridDefinition());
+        outputVolume = new SeismicVolume(pc, opio.getGridDefinition());
         opio.setDistributedArray(outputVolume.getDistributedArray());
       }
       // Loop over input volumes
-      while (ipio.hasNextVolume()) {
+      while (ipio.hasNext()) {
         // Get the next input volume
+        ipio.next();
         try {
-          ipio.nextVolume();
+          ipio.read();
         } catch (SeisException e) {
-          if (pc.isMaster())
+          if (pc.isMaster()) {
             e.printStackTrace();
+          }
           throw new RuntimeException(e.getCause());
         }
-        tool.processVolume(toolContext, inputVolume, outputVolume );
+        tool.processVolume(toolContext, inputVolume, outputVolume);
         if (output) {
           // Process the input volume and see if there is output
           if (tool.processVolume(toolContext, inputVolume, outputVolume)) {
+            opio.next();
             try {
               opio.write();
             } catch (SeisException e) {
-              if (pc.isMaster())
+              if (pc.isMaster()) {
                 e.printStackTrace();
+              }
               throw new RuntimeException(e.getCause());
             }
           }
@@ -184,11 +186,13 @@ public class StandAloneVolumeTool implements IVolumeTool {
       if (output) {
         // Process any remaining output
         while (tool.outputVolume(toolContext, outputVolume)) {
+          opio.next();
           try {
             opio.write();
           } catch (SeisException e) {
-            if (pc.isMaster())
+            if (pc.isMaster()) {
               e.printStackTrace();
+            }
             throw new RuntimeException(e.getCause());
           }
         }
@@ -212,8 +216,7 @@ public class StandAloneVolumeTool implements IVolumeTool {
   }
 
   @Override
-  public boolean processVolume(ToolContext toolContext, ISeismicVolume input,
-      ISeismicVolume output) {
+  public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
     // TODO Auto-generated method stub
     return false;
   }
