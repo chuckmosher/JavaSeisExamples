@@ -2,6 +2,7 @@ package org.javaseis.tool;
 
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.services.ParameterService;
+import org.javaseis.volume.ISeismicVolume;
 
 import beta.javaseis.parallel.IParallelContext;
 
@@ -16,6 +17,7 @@ public class ToolContext {
   public ParameterService parms;
   public IParallelContext pc;
   public GridDefinition inputGrid, outputGrid;
+  public ISeismicVolume inputVolume, outputVolume;
 
   public ToolContext() {
   }
@@ -98,11 +100,30 @@ public class ToolContext {
   public GridDefinition getOutputGrid() {
     return outputGrid;
   }
+  
+  public void setInputVolume( ISeismicVolume inputSeismicVolume ) {
+    inputVolume = inputSeismicVolume;
+  }
 
+  public ISeismicVolume getInputVolume() {
+    return inputVolume;
+  }
+
+  
+  public void setOutputVolume( ISeismicVolume outputSeismicVolume ) {
+    outputVolume = outputSeismicVolume;
+  }
+
+  public ISeismicVolume getOutputVolume() {
+    return outputVolume;
+  }
+  
   public ToolContext(ToolContext tc) {
     parms = tc.parms;
     pc = tc.pc;
-    inputGrid = new GridDefinition(tc.inputGrid);
-    outputGrid = new GridDefinition(tc.outputGrid);
+    inputGrid = tc.inputGrid;
+    outputGrid = tc.outputGrid;
+    inputVolume = tc.inputVolume;
+    outputVolume = tc.outputVolume;
   }
 }

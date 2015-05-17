@@ -18,4 +18,8 @@ public interface ISeismicVolume extends IRegularGrid {
   public int getElementCount();
 
   public ElementType getElementType();
+  
+  public long shapeLength();
+  
+  public void allocate(long maxLength);
 }

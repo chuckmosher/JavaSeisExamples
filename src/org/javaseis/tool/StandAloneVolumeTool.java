@@ -33,7 +33,8 @@ public class StandAloneVolumeTool implements IVolumeTool {
 
   public static IDistributedIOService ipio, opio;
 
-  public static String inputFileSystem, inputFilePath, outputFileSystem, outputFilePath;
+  public static String inputFileSystem, inputFilePath, outputFileSystem,
+      outputFilePath;
 
   public static boolean output = false;
 
@@ -55,8 +56,8 @@ public class StandAloneVolumeTool implements IVolumeTool {
         ipio.close();
       } catch (SeisException ex) {
         ex.printStackTrace();
-        throw new RuntimeException("Could not open inputPath: " + inputFilePath + "\n"
-            + "    on inputFileSystem: " + ipio, ex.getCause());
+        throw new RuntimeException("Could not open inputPath: " + inputFilePath
+            + "\n" + "    on inputFileSystem: " + ipio, ex.getCause());
       }
 
     }
@@ -82,8 +83,9 @@ public class StandAloneVolumeTool implements IVolumeTool {
           opio.close();
         } catch (SeisException ex) {
           ex.printStackTrace();
-          throw new RuntimeException("Could not create outputPath: " + outputFilePath + "\n"
-              + "    on outputFileSystem: " + opio, ex.getCause());
+          throw new RuntimeException("Could not create outputPath: "
+              + outputFilePath + "\n" + "    on outputFileSystem: " + opio,
+              ex.getCause());
         }
       }
       // Open for both open and create
@@ -92,12 +94,14 @@ public class StandAloneVolumeTool implements IVolumeTool {
         GridDefinition currentGrid = opio.getGridDefinition();
         opio.close();
         if (currentGrid.matches(outputGrid) == false)
-          throw new RuntimeException("outputFilePath GridDefintion: " + outputGrid
-              + "\n does not match toolContext GridDefinition: " + currentGrid);
+          throw new RuntimeException("outputFilePath GridDefintion: "
+              + outputGrid + "\n does not match toolContext GridDefinition: "
+              + currentGrid);
       } catch (SeisException ex) {
         ex.printStackTrace();
-        throw new RuntimeException("Could not open outputPath: " + outputFilePath + "\n"
-            + "    on outputFileSystem: " + opio, ex.getCause());
+        throw new RuntimeException("Could not open outputPath: "
+            + outputFilePath + "\n" + "    on outputFileSystem: " + opio,
+            ex.getCause());
       }
     }
     // Now run the tool handler which calls the implementor's methods
@@ -148,7 +152,8 @@ public class StandAloneVolumeTool implements IVolumeTool {
       // Call the implementing method for parallel initialization
       tool.parallelInit(toolContext);
       // Create the input and output seismic volumes
-      ISeismicVolume inputVolume = new SeismicVolume(pc, ipio.getGridDefinition());
+      ISeismicVolume inputVolume = new SeismicVolume(pc,
+          ipio.getGridDefinition());
       ipio.setDistributedArray(inputVolume.getDistributedArray());
       ISeismicVolume outputVolume = inputVolume;
       if (output) {
@@ -167,19 +172,17 @@ public class StandAloneVolumeTool implements IVolumeTool {
           }
           throw new RuntimeException(e.getCause());
         }
-        tool.processVolume(toolContext, inputVolume, outputVolume);
-        if (output) {
-          // Process the input volume and see if there is output
-          if (tool.processVolume(toolContext, inputVolume, outputVolume)) {
-            opio.next();
-            try {
-              opio.write();
-            } catch (SeisException e) {
-              if (pc.isMaster()) {
-                e.printStackTrace();
-              }
-              throw new RuntimeException(e.getCause());
+        boolean hasOutput = tool.processVolume(toolContext, inputVolume,
+            outputVolume);
+        if (output && hasOutput) {
+          opio.next();
+          try {
+            opio.write();
+          } catch (SeisException e) {
+            if (pc.isMaster()) {
+              e.printStackTrace();
             }
+            throw new RuntimeException(e.getCause());
           }
         }
       }
@@ -216,7 +219,8 @@ public class StandAloneVolumeTool implements IVolumeTool {
   }
 
   @Override
-  public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
+  public boolean processVolume(ToolContext toolContext, ISeismicVolume input,
+      ISeismicVolume output) {
     // TODO Auto-generated method stub
     return false;
   }

@@ -1,5 +1,6 @@
-package org.javaseis.examples.parallel;
+package org.javaseis.examples.tool;
 
+import org.javaseis.grid.GridDefinition;
 import org.javaseis.services.ParameterService;
 import org.javaseis.tool.StandAloneVolumeTool;
 import org.javaseis.tool.ToolContext;
@@ -24,12 +25,18 @@ public class ExampleVolumeTool extends StandAloneVolumeTool {
     }
     exec(parms, new ExampleVolumeTool());
   }
+  
+  @Override
+  public void serialInit(ToolContext toolContext) {
+    toolContext.setOutputGrid(new GridDefinition(toolContext.getInputGrid()));
+  }
 
   @Override
   public void parallelInit(ToolContext toolContext) {
     volumeCount = 0;
     pc = toolContext.getParallelContext();
     pc.masterPrint("Input Grid Definition:\n" + toolContext.getInputGrid());
+    pc.masterPrint("Output Grid Definition:\n" + toolContext.getOutputGrid());
     compTime = new IntervalTimer();
     totalTime = new IntervalTimer();
     totalTime.start();

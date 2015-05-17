@@ -13,8 +13,7 @@ public class JavaSeisMovieApplet extends JApplet {
 	 * Create the applet.
 	 */
 	public JavaSeisMovieApplet() {
-	    IMovieSource source = new RandomMovieSource(new int[] { 100, 100, 100 });
-	    JavaSeisMovie.display(source);
+	    JavaSeisMovie.display();
 	}
 
 }

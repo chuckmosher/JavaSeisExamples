@@ -60,11 +60,13 @@ public class VolumeToolRunner {
 
     @Override
     public void run() {
-      long[] maxLength = new long[2];
-      long inputLength, outputLength;
+      long inputLength = 0;
+      long outputLength = 0;
       for (int i = 0; i < toolCount; i++) {
-
+        inputLength = Math.max(inputLength,toolContext[i].getInputVolume().shapeLength());
+        outputLength = Math.max(outputLength,toolContext[i].getOutputVolume().shapeLength());
       }
+      
       parallelInit();
       parallelProcess();
       parallelFinish();

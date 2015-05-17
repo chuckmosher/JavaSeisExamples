@@ -59,11 +59,40 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
     }
     localGrid = new GridDefinition(3, axis);
     binGrid = binGridIn;
+    elementType = ElementType.FLOAT;
+    elementCount = 1;
+    decompType = Decomposition.BLOCK;
+  }
+  
+  public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition,
+      BinGrid binGridIn, ElementType volumeElementType, int volumeElementCount, int volumeDecompType ) {
+    pc = parallelContext;
+    AxisDefinition[] axis = new AxisDefinition[3];
+    int[] volumeShape = new int[3];
+    for (int i = 0; i < 3; i++) {
+      axis[i] = globalGridDefinition.getAxis(i);
+      volumeShape[i] = (int) axis[i].getLength();
+    }
+    localGrid = new GridDefinition(3, axis);
+    binGrid = binGridIn;
+    elementType = volumeElementType;
+    elementCount = volumeElementCount;
+    decompType = volumeDecompType;
   }
 
   public void allocate(long maxLength) {
-    DistributedArray volume = new DistributedArray(pc, float.class, 3, elementCount, volumeShape, decompType,
+    volume = new DistributedArray(pc, elementType.getClass(), 3, elementCount, volumeShape, decompType,
         maxLength);
+    volume.allocate();
+  }
+  
+  @Override
+  public long shapeLength() {
+    long length = elementCount;
+    for (int i=0; i<3; i++) {
+      length *= volumeShape[i];
+    }
+    return length;
   }
 
   @Override
