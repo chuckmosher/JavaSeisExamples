@@ -13,12 +13,11 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
 
-
 /**
  * This example illustrates basic parallel I/O with JavaSeis. The example starts
  * a parallel task and creates a cube of random numbers. The cube is written to
  * disk in parallel, and then read back and verified.
- * 
+ *
  */
 public class ExampleParallelIO {
 
@@ -41,7 +40,9 @@ public class ExampleParallelIO {
       IDistributedIOService pio = new FileSystemIOService(pc, tmpdir);
       int[] testShape = new int[] { 201, 201, 201, 9, 5 };
       try {
-        if (pio.exists("temp.js")) pio.delete("temp.js");
+        if (pio.exists("temp.js")) {
+          pio.delete("temp.js");
+        }
         pio.create("temp.js", testShape);
         pio.open("temp.js");
       } catch (SeisException ex) {
@@ -60,21 +61,21 @@ public class ExampleParallelIO {
         float val = pc.rank() + ivol++;
         da.resetTraceIterator();
         while (da.hasNext()) {
-            da.next();
-            da.getTrace(trc);
-            for (int i=0; i<shape[0]; i++) {
-              trc[i] = r.nextFloat() + val;
-            }
-            da.putTrace(trc);
+          da.next();
+          da.getTrace(trc);
+          for (int i = 0; i < shape[0]; i++) {
+            trc[i] = r.nextFloat() + val;
+          }
+          da.putTrace(trc);
         }
         try {
-          pc.serialPrint("Write filePosition " + Arrays.toString( pio.getFilePosition() ) );
+          pc.serialPrint("Write filePosition " + Arrays.toString(pio.getFilePosition()));
           pio.write();
         } catch (SeisException ex) {
           throw new RuntimeException(ex);
         }
       }
-      
+
       try {
         pio.close();
         pio = null;
@@ -91,32 +92,31 @@ public class ExampleParallelIO {
       while (pio.hasNext()) {
         pio.next();
         try {
-          pc.serialPrint("Read filePosition " + Arrays.toString( pio.getFilePosition() ) );
-          pio.read();  
+          pc.serialPrint("Read filePosition " + Arrays.toString(pio.getFilePosition()));
+          pio.read();
         } catch (SeisException ex) {
           throw new RuntimeException(ex);
-        } 
+        }
         float val = pc.rank() + ivol++;
         da.resetTraceIterator();
         while (da.hasNext()) {
-            da.next();
-            da.getTrace(trc);
-            for (int i=0; i<shape[0]; i++) {
-              float expected = r.nextFloat() + val;
-              if (trc[i] != expected ) {
-                throw new RuntimeException("Failed at file position " +  Arrays.toString(pio.getFilePosition()) +
-                    " array position " + Arrays.toString( da.getPosition() ) + ": Expected value " + expected +
-                    " actual value " + trc[i] + " at sample " + i );
-              }
-            }
+          da.next();
+          da.getTrace(trc);
+          for (int i = 0; i < shape[0]; i++) {
+            float expected = r.nextFloat() + val;
+            if (trc[i] != expected)
+              throw new RuntimeException("Failed at file position " + Arrays.toString(pio.getFilePosition())
+                  + " array position " + Arrays.toString(da.getPosition()) + ": Expected value " + expected
+                  + " actual value " + trc[i] + " at sample " + i);
+          }
         }
       }
       try {
         pio.close();
-        //pio.delete("temp.js");   
+        //pio.delete("temp.js");
       } catch (SeisException ex) {
         throw new RuntimeException(ex);
-      } 
+      }
     }
   }
 }
