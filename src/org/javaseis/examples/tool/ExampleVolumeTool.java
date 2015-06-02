@@ -46,6 +46,7 @@ public class ExampleVolumeTool extends StandAloneVolumeTool {
   public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
     System.out.println("Process volume " + volumeCount++);
     compTime.start();
+    // Insert Geophysics here ;-)
     output.copyVolume(input);
     compTime.stop();
     return true;
