@@ -65,7 +65,7 @@ public class ShotMigPhaseShift {
    * @param initialSource - RegularGrid containing source at Z=0 in the
    *          X,Y,Frequency domain
    * @param outputImage - Output RegularGrid for the image in X,Y,Z domain
-   * @param modelVelocity - Interval velocity model for imaging
+   * @param velocity - Interval velocity model for imaging
    */
   public ShotMigPhaseShift(float padx, float pady, int maxFreqIndex,
       int maxDepthIndex, float depthStep, RegularGrid recordedData,
@@ -104,8 +104,8 @@ public class ShotMigPhaseShift {
     dky = 2 * Math.PI / (nky * deltas[1]);
     dw = 2 * Math.PI * deltas[2];
     // Create work arrays for FFT's, shifts, and image
-    sc = new float[nky][2 * nkx]; // Complex arrays require two elements per
-                                  // sample
+    // Complex arrays require two elements per sample
+    sc = new float[nky][2 * nkx];
     rc = new float[nky][2 * nkx];
     ps = new float[nky][nkx]; // Depth shift is real
     img = new float[ny][nx]; // Image is real
@@ -179,10 +179,11 @@ public class ShotMigPhaseShift {
   /**
    * Apply phase shift operator at a given frequency, velocity and depth step
    * 
-   * @param omega - input angular frequency
+   * @param ifreq - input angular frequency
    * @param v - input velocity
    * @param depthStep - input depth step
-   * @param p[nky][2*nkx] - input/output complex wavefield array array
+   * @param shot - Complex wavefield array for source signature in kx and ky
+   * @param rcvr - Complex wavefield array for receiver data in kx and ky
    */
   public void applyPhaseShift(int ifreq, float v, float depthStep, float[][] shot, float[][] rcvr ) {
     final double EPS = 1e-12;
@@ -222,11 +223,15 @@ public class ShotMigPhaseShift {
     }
   }
 
+
+
+
   /**
    * Return signed symmetric wavenumber index
    * 
    * @param nyq - nyquist sample
-   * @param ix - input index from 0 to nfft-1
+   * @param nft - number of time/frequency samples
+   * @param i - input index from 0 to nfft-1
    * @return signed index from 1-nyq to nyq
    */
   public static final int getKindex(int nyq, int nft, int i) {
@@ -238,8 +243,9 @@ public class ShotMigPhaseShift {
    * symmetry of phase shift values to reduce sqrt and sin/cos computations
    * 
    * @param omega - angular frequency in radians/sec
+   * @param v - input velocity
    * @param depthStep - depth step size
-   * @param p[nky][2*nkx] - input/output 2D array wavefield array
+   * @param p - input/output 2D wavefield array of size (nky) x (2*nkx)
    */
   public void applyPhaseSymmetric(float omega, float v, float depthStep,
       float[][] p) {

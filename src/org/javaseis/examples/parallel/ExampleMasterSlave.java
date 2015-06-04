@@ -15,6 +15,9 @@ import beta.javaseis.parallel.ParallelTaskExecutor;
  * 
  */
 public class ExampleMasterSlave {
+
+  public static float[] data;
+
   /**
    * Main method that creates and runs the JavaSeis ParallelTaskExecutor with
    * master and slave tasks
@@ -22,9 +25,6 @@ public class ExampleMasterSlave {
    * @param args - number of slaves to use (default 7)
    *          
    */
-  
-  public static float[] data;
-  
   public static void main(String[] args) {
     // Default number of slaves to one
     int nslave = 7;

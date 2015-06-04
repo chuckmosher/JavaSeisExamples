@@ -77,7 +77,7 @@ public class ToolContext {
   /**
    * Return the GridDefinition for the input to this tool
    *
-   * @return
+   * @return The GridDefinition for the input to this tool
    */
   public GridDefinition getInputGrid() {
     return inputGrid;
@@ -95,7 +95,7 @@ public class ToolContext {
   /**
    * Return the output grid for a tool
    *
-   * @return
+   * @return The GridDefinition for the output from this tool
    */
   public GridDefinition getOutputGrid() {
     return outputGrid;
