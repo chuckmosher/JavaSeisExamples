@@ -1,5 +1,7 @@
 package org.javaseis.examples.tool;
 
+import java.util.Arrays;
+
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.properties.AxisDefinition;
 import org.javaseis.services.ParameterService;
@@ -21,13 +23,18 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
 
   public static void main(String[] args) {
     ParameterService parms = new ParameterService(args);
-    if (parms.getParameter("inputFileSystem") == "null") {
-      parms.setParameter("inputFileSystem", "/home/wilsonmr/javaseis");
-    }
-    if (parms.getParameter("inputFilePath") == "null") {
-      parms.setParameter("inputFilePath", "100-rawsyntheticdata.js");
-    }
+    setParameterIfUnset(parms,"inputFileSystem","/home/wilsonmr/javaseis");
+    setParameterIfUnset(parms,"inputFilePath","100-rawsyntheticdata.js");
+    setParameterIfUnset(parms,"outputFileSystem","/home/wilsonmr/javaseis");
+    setParameterIfUnset(parms,"outputFilePath","100a-rawsynthpwaves.js");
     exec(parms, new ExtractPWaveData());
+  }
+
+  private static void setParameterIfUnset(ParameterService parms,
+      String parameterName, String parameterValue) {
+    if (parms.getParameter(parameterName) == "null") {
+      parms.setParameter(parameterName, parameterValue);
+    }
   }
 
   @Override
@@ -44,7 +51,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
 
   private void findAndRemoveComponentAxisFromGrid(ToolContext toolContext) {
     
-    componentAxis = componentAxis(toolContext);
+    componentAxis = findComponentAxis(toolContext);
 
     if (dataIsMulticomponent(toolContext) && componentAxis >= 3) {
       System.out.println("Input Data is multicomponent.  The component axis is #" + 
@@ -61,24 +68,24 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     }
   }
 
-  private int componentAxis(ToolContext toolContext) {
+  private int findComponentAxis(ToolContext toolContext) {
 
     String[] AxisLabels = toolContext.getInputGrid().getAxisLabelsStrings();
     int componentAxis = -1;
     for (int axis = 0 ; axis < AxisLabels.length ; axis++) {
       if (AxisLabels[axis].equals("GEO_COMP")) {
-        componentAxis = axis;
+        return axis;
       }
     }
     return componentAxis;
   }
 
   private boolean dataIsMulticomponent(ToolContext toolContext) {
-    return (componentAxis(toolContext) != -1);
+    return (findComponentAxis(toolContext) != -1);
   }
 
   private void removeComponentAxisFromOutputGrid(ToolContext toolContext) {
-    int componentAxis = componentAxis(toolContext);
+    int componentAxis = findComponentAxis(toolContext);
 
     GridDefinition inputGrid = toolContext.getInputGrid();
     int outputNumDimensions = toolContext.getInputGrid().getNumDimensions() - 1;
@@ -112,16 +119,22 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
   public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
     System.out.println("Process volume " + volumeCount++);
     compTime.start();
-    output.copyVolume(input);
+    //output.copyVolume(input);
     double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
     int[] pos = new int[] {0,0,0};
-    System.out.println(volumePosition.toString());
-    System.out.println(pos.toString());
- 
-    input.worldCoords(pos,volumePosition);
-    System.out.println(volumePosition.toString());
+    input.worldCoords(pos, volumePosition);
+    System.out.println(input.getNumDimensions());
+    System.out.println(Arrays.toString(volumePosition));
+    
+    GridDefinition whatisthis = input.getGlobalGrid();
+    System.out.println(whatisthis.getNumDimensions());
+    System.out.println(Arrays.toString(whatisthis.getAxisLengths()));
+    int[] position = new int[] {43,2,4,2,3};
+    //This shouldn't always be true
+    System.out.println(input.isPositionLocal(position));
+    
     compTime.stop();
-    return true;
+    return false;
   }
 
   @Override
