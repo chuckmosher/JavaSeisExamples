@@ -10,11 +10,15 @@ import beta.javaseis.distributed.DistributedArray;
 import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.regulargrid.IRegularGrid;
 import beta.javaseis.regulargrid.OrientationType;
+import beta.javaseis.regulargrid.RegularGrid;
 
 public class SeismicVolume implements ISeismicVolume, IRegularGrid {
 
   GridDefinition globalGrid, localGrid;
 
+  //TODO  No write occurrences of this grid.  Leads to NullPointerExceptions
+  //      Also, this class both implements and contains an IRegularGrid.  Is
+  //      this a circular abstraction of the regulargrid functionality?
   IRegularGrid volumeGrid;
 
   BinGrid binGrid;
@@ -43,6 +47,8 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
     localGrid = new GridDefinition(3, axis);
     volume = new DistributedArray(pc, volumeShape);
     binGrid = BinGrid.simpleBinGrid(volumeShape[1], volumeShape[2]);
+    //TODO need a volumeGrid that knows where it is in the global grid.
+    volumeGrid = new RegularGrid(volume,localGrid,binGrid);
     elementType = ElementType.FLOAT;
     elementCount = 1;
     decompType = Decomposition.BLOCK;
