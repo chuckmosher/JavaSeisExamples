@@ -17,7 +17,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
   int volumeCount;
   IParallelContext pc;
   IntervalTimer compTime, totalTime;
-  
+
   private int componentAxis;
   private int pwaveComponentNumber;
 
@@ -50,10 +50,10 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
   }
 
   private void findAndRemoveComponentAxisFromGrid(ToolContext toolContext) {
-    
+
     componentAxis = findComponentAxis(toolContext);
 
-    if (dataIsMulticomponent(toolContext) && componentAxis >= 3) {
+    if (dataIsMulticomponent(toolContext) && componentAxis > 2) {
       System.out.println("Input Data is multicomponent.  The component axis is #" + 
           (componentAxis+1));
       removeComponentAxisFromOutputGrid(toolContext);
@@ -99,7 +99,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
 
   private AxisDefinition determineOutputAxis(
       GridDefinition inputGrid, int dim, int axisToRemove) {
-    
+
     if (dim < axisToRemove) return inputGrid.getAxis(dim);
     else return inputGrid.getAxis(dim+1);
   }
@@ -117,23 +117,46 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
 
   @Override
   public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
-    System.out.println("Process volume " + volumeCount++);
     compTime.start();
     //output.copyVolume(input);
-    double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
-    int[] pos = new int[] {0,0,0};
-    input.worldCoords(pos, volumePosition);
-    System.out.println(input.getNumDimensions());
-    System.out.println(Arrays.toString(volumePosition));
     
-    GridDefinition whatisthis = input.getGlobalGrid();
-    System.out.println(whatisthis.getNumDimensions());
-    System.out.println(Arrays.toString(whatisthis.getAxisLengths()));
-    int[] position = new int[] {43,2,4,2,3};
-    //This shouldn't always be true
-    System.out.println(input.isPositionLocal(position));
-    
-    compTime.stop();
+    //Idea: copy every volume where the GEO_COMP index is equal to
+    //      pwaveComponentNumber-1.
+    //      It would be better if I could figure out the 4th index, then use that to
+    //      compute the value of GEO_COMP using origin + index*delta, but I can't make
+    //      that work right now, so I'm just going to use the counter
+    long numComponents = input.getGlobalGrid().getAxisLengths()[componentAxis];
+    if (volumeCount % numComponents == pwaveComponentNumber - 1) { 
+      System.out.println("Saving P-waves from volume " + volumeCount++);
+      output.copyVolume(input);
+      compTime.stop();
+      return true;
+    } else {
+      System.out.println("Trashing S-waves from volume " + volumeCount++);
+      compTime.stop();
+      return false;
+    }
+
+  //TODO extract these musings into a coherent set of tests
+  /*  {
+      double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
+      int[] pos = new int[] {0,0,0};
+      input.worldCoords(pos, volumePosition);
+      System.out.println(input.getNumDimensions());
+      System.out.println(Arrays.toString(volumePosition));
+
+      GridDefinition whatisthis = input.getGlobalGrid();
+      System.out.println(whatisthis.getNumDimensions());
+      System.out.println(Arrays.toString(whatisthis.getAxisLengths()));
+      int[] position = new int[] {43,2,4,2,3};
+      //This shouldn't always be true
+      System.out.println(input.isPositionLocal(position));
+    }
+    */
+  }
+  
+  @Override
+  public boolean outputVolume(ToolContext toolContext, ISeismicVolume output) {
     return false;
   }
 

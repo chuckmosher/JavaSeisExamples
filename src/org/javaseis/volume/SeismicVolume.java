@@ -18,7 +18,7 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
 
   //TODO  No write occurrences of this grid.  Leads to NullPointerExceptions
   //      Also, this class both implements and contains an IRegularGrid.  Is
-  //      this a circular abstraction of the regulargrid functionality?
+  //      this a circular abstraction of the RegularGrid functionality?
   IRegularGrid volumeGrid;
 
   BinGrid binGrid;
@@ -202,10 +202,17 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
   public GridDefinition getGlobalGrid() {
     return globalGrid;
   }
+  
+  @Override
+  public GridDefinition getLocalGrid() {
+    return localGrid;
+  } 
 
+  //TODO Surely two seismicVolumes match if their localGrids are the same,
+  // not their globalGrids.
   @Override
   public boolean matches(ISeismicVolume seismicVolume) {
-    return globalGrid.matches(seismicVolume.getGlobalGrid());
+    return localGrid.matches(seismicVolume.getLocalGrid());
   }
 
   @Override

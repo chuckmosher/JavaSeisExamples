@@ -8,6 +8,8 @@ import beta.javaseis.regulargrid.IRegularGrid;
 
 public interface ISeismicVolume extends IRegularGrid {
   public GridDefinition getGlobalGrid();
+  
+  public GridDefinition getLocalGrid();
 
   public DistributedArray getDistributedArray();
 
@@ -22,4 +24,5 @@ public interface ISeismicVolume extends IRegularGrid {
   public long shapeLength();
   
   public void allocate(long maxLength);
+
 }
