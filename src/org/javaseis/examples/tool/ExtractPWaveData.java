@@ -1,7 +1,5 @@
 package org.javaseis.examples.tool;
 
-import java.util.Arrays;
-
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.properties.AxisDefinition;
 import org.javaseis.services.ParameterService;

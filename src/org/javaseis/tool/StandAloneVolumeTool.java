@@ -24,7 +24,7 @@ import beta.javaseis.parallel.UniprocessorContext;
 public class StandAloneVolumeTool implements IVolumeTool {
 
   public StandAloneVolumeTool() {
-    // Need default constructor so implementors don't have to provide one
+    // TODO Need default constructor so implementors don't have to provide one
   }
 
   public static ToolContext toolContext;
