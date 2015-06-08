@@ -28,10 +28,10 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     exec(parms, new ExtractPWaveData());
   }
 
-  private static void setParameterIfUnset(ParameterService parms,
+  private static void setParameterIfUnset(ParameterService parameterService,
       String parameterName, String parameterValue) {
-    if (parms.getParameter(parameterName) == "null") {
-      parms.setParameter(parameterName, parameterValue);
+    if (parameterService.getParameter(parameterName) == "null") {
+      parameterService.setParameter(parameterName, parameterValue);
     }
   }
 
