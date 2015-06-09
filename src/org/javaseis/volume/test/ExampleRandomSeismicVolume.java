@@ -22,33 +22,33 @@ import org.javaseis.properties.Units;
 public class ExampleRandomSeismicVolume {
 
   private static final int DEFAULT_NUM_DIMENSIONS = 5;
+  public static final String defaultPath = defaultDataLocation();
   private double[] defaultPhysicalDeltas = new double[] {2, 12, 100, 1, 1};
   private double[] defaultPhysicalOrigins = new double[] {0, 0, 0, 1, 1};
   private long[] defaultLogicalDeltas = new long[] {1, 1, 1, 1, 1};
   private long[] defaultLogicalOrigins = new long[] {0, 1, 1, 1, 1};
   private long[] defaultGridDimensions = new long[] {900, 64, 47, 9, 4};
 
-  public static String dataFullPath;
+  public String dataFullPath;
 
   public Seisio seisio;
   public GridDefinition gridDefinition;
 
-
-  // Constructor that uses a ParameterSet
+  //Noarg constructor
   public ExampleRandomSeismicVolume() {
-    dataFullPath = defaultDataLocation();
+    dataFullPath = defaultPath;
     exceptionIfFileAlreadyExists();
     AxisDefinition[] axes = defaultAxisDefinitions();
-    GridDefinition gridDefinition = makeGridDefinition(axes);
+    gridDefinition = makeGridDefinition(axes);
     try {
-      Seisio sio = createSeisIO(gridDefinition);
-      createJavaSeisData(sio);
+      seisio = createSeisIO(gridDefinition);
+      createJavaSeisData(seisio);
     } catch (SeisException e) {
 
     }
   }
 
-  private String defaultDataLocation() {
+  private static String defaultDataLocation() {
     String dataFolder = System.getProperty("java.io.tmpdir");
     String dataFileName = "temp1758383.js";
     String dataFullPath = dataFolder + File.separator + dataFileName;
@@ -63,7 +63,7 @@ public class ExampleRandomSeismicVolume {
     }
   }
 
-  public static boolean dataSetExists(String path) {
+  private boolean dataSetExists(String path) {
     File datapath = new File(path);
     return (datapath.exists());
   }
@@ -128,7 +128,6 @@ public class ExampleRandomSeismicVolume {
 
   private void createJavaSeisData(Seisio sio) throws SeisException {
     sio.create();
-    System.out.println("Successfully created " + dataFullPath);
   }
 
   public void deleteJavaSeisData() {
