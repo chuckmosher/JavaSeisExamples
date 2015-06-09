@@ -25,6 +25,8 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     setParameterIfUnset(parms,"inputFilePath","100-rawsyntheticdata.js");
     setParameterIfUnset(parms,"outputFileSystem","/home/wilsonmr/javaseis");
     setParameterIfUnset(parms,"outputFilePath","100a-rawsynthpwaves.js");
+    //TODO if you set threadCount to 2, half of the data will be missing
+    setParameterIfUnset(parms,"threadCount","1");
     exec(parms, new ExtractPWaveData());
   }
 
@@ -118,6 +120,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     compTime.start();
     //output.copyVolume(input);
     
+    //TODO
     //Idea: copy every volume where the GEO_COMP index is equal to
     //      pwaveComponentNumber-1.
     //      It would be better if I could figure out the 4th index, then use that to
