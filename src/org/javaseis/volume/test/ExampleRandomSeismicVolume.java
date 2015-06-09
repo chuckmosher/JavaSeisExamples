@@ -2,106 +2,137 @@ package org.javaseis.volume.test;
 
 import java.io.File;
 
-import org.javaseis.services.ParameterService;
-
+import org.javaseis.io.Seisio;
+import org.javaseis.grid.GridDefinition;
+import org.javaseis.properties.AxisDefinition;
+import org.javaseis.properties.AxisLabel;
+import org.javaseis.properties.DataDomain;
+import org.javaseis.util.SeisException;
+import org.javaseis.properties.Units;
 
 /**
- * Create an example JavaSeis dataset that can be read in as a single SeismicVolume,
+ * Create an example JavaSeis data set that can be read in as a single SeismicVolume,
  * filled with random numbers. For testing purposes.
  * 
- * This class only makes and cleans up the dataset.
+ * This class only makes and cleans up the data set.
  * 
  * @author Marcus Wilson 2015
  *
  */
 public class ExampleRandomSeismicVolume {
 
-  private static ParameterService parms;
-  private static String dataFolder;
-  private static String dataFileName;
-  private static String dataFullPath;
+  private static final int DEFAULT_NUM_DIMENSIONS = 5;
+  private double[] defaultPhysicalDeltas = new double[] {2, 12, 100, 1, 1};
+  private double[] defaultPhysicalOrigins = new double[] {0, 0, 0, 1, 1};
+  private long[] defaultLogicalDeltas = new long[] {1, 1, 1, 1, 1};
+  private long[] defaultLogicalOrigins = new long[] {0, 1, 1, 1, 1};
+  private long[] defaultGridDimensions = new long[] {900, 64, 47, 9, 4};
 
-  // Establishes the minimum number of parameters that have to be set to 
-  // make a viable javaseis volume.
-  private static ParameterService generateDefaultParameters() {
-    String[] noArguments = new String[0];
-    parms = new ParameterService(noArguments);
-    addDefaultDataLocation();
+  public static String dataFullPath;
 
-    String gridDimensions = "900 64 47";
-    parms.setParameter("size",gridDimensions);
+  public Seisio seisio;
+  public GridDefinition gridDefinition;
 
-    String gridSpacings = "2 12 100";
-    parms.setParameter("deltas",gridSpacings);
 
-    return parms;
-  }
-
-  private static void addDefaultDataLocation() {
-    dataFolder = System.getProperty("java.io.tmpdir");
-    dataFileName = "temp.js";
-    dataFullPath = "inputFileSystem" + File.separator + "inputFilePath";
-    parms.setParameter("inputFileSystem",dataFolder);
-    parms.setParameter("inputFilePath",dataFileName);
-  }
-
-  // Noarg constructor that uses the defaults
+  // Constructor that uses a ParameterSet
   public ExampleRandomSeismicVolume() {
-    this(generateDefaultParameters());
+    dataFullPath = defaultDataLocation();
+    exceptionIfFileAlreadyExists();
+    AxisDefinition[] axes = defaultAxisDefinitions();
+    GridDefinition gridDefinition = makeGridDefinition(axes);
+    try {
+      Seisio sio = createSeisIO(gridDefinition);
+      createJavaSeisData(sio);
+    } catch (SeisException e) {
+
+    }
   }
 
-  private void failIfFileAlreadyExists() {
+  private String defaultDataLocation() {
+    String dataFolder = System.getProperty("java.io.tmpdir");
+    String dataFileName = "temp1758383.js";
+    String dataFullPath = dataFolder + File.separator + dataFileName;
+    return dataFullPath;
+  }
+
+  private void exceptionIfFileAlreadyExists() {
     assert dataFullPath != null;
-    File datapath = new File(dataFullPath);
-    if (datapath.exists()) {
+    if (dataSetExists(dataFullPath)) {
       throw new UnsupportedOperationException(
           "Unable to create data.  File already exists");
     }
   }
 
-  // Constructor that uses a parset (note numdimensions == 3)
-  public ExampleRandomSeismicVolume(ParameterService inputParms) {
-    parms = inputParms;
-    getFilePathFromParameterService();
-    failIfFileAlreadyExists();
-    checkNumDimensionsIsThree();
-    getAxisDefinitionsFromParameterService();
-    makeGridDefinitionFromAxisDefinitions();
-    createSeisIO();
-    createJavaSeisData();
+  public static boolean dataSetExists(String path) {
+    File datapath = new File(path);
+    return (datapath.exists());
   }
 
-  private void getFilePathFromParameterService() {
-    // TODO Auto-generated method stub
-    
+  private AxisDefinition[] defaultAxisDefinitions() {
+
+    AxisLabel[] labels = defaultAxisLabels();
+    Units[] units = defaultUnits();
+    DataDomain[] domains = defaultDomains();
+    long[] gridSize = defaultGridDimensions;
+    long[] lorigins = defaultLogicalOrigins;
+    long[] ldeltas = defaultLogicalDeltas;
+    double[] porigins = defaultPhysicalOrigins;
+    double[] pdeltas = defaultPhysicalDeltas;
+
+    int numDimensions = checkDimensions();
+
+    AxisDefinition[] axisDefinitions = new AxisDefinition[numDimensions];
+    for (int k = 0 ; k < numDimensions ; k++) {
+      axisDefinitions[k] = new AxisDefinition(
+          labels[k],
+          units[k],
+          domains[k],
+          gridSize[k],
+          lorigins[k],
+          ldeltas[k],
+          porigins[k],
+          pdeltas[k]);
+    }
+    return axisDefinitions;
   }
 
-  private void checkNumDimensionsIsThree() {
-    // TODO Auto-generated method stub
-    
+  private int checkDimensions() {
+    //TODO fix later.  Check all argument arrays have same length
+    return DEFAULT_NUM_DIMENSIONS;
   }
 
-  private void getAxisDefinitionsFromParameterService() {
-    // TODO Auto-generated method stub
-    
+  private AxisLabel[] defaultAxisLabels() {
+    return AxisLabel.getDefault(DEFAULT_NUM_DIMENSIONS);
   }
 
-  private void makeGridDefinitionFromAxisDefinitions() {
-    // TODO Auto-generated method stub
-    
+  private Units[] defaultUnits() {
+    return new Units[] {Units.MS,Units.M,Units.M,Units.NULL,Units.NULL};
   }
 
-  private void createSeisIO() {
-    // TODO Auto-generated method stub
-    
+  private DataDomain[] defaultDomains() {
+    return new DataDomain[] {
+        DataDomain.TIME,
+        DataDomain.SPACE,
+        DataDomain.SPACE,
+        DataDomain.NULL,
+        DataDomain.NULL};
   }
 
-  private void createJavaSeisData() {
+  private GridDefinition makeGridDefinition(AxisDefinition[] axes) {
+    return new GridDefinition(axes.length,axes);   
+  }
 
+  private Seisio createSeisIO(GridDefinition grid) throws SeisException {
+    return new Seisio(dataFullPath,grid);
+  }
+
+  private void createJavaSeisData(Seisio sio) throws SeisException {
+    sio.create();
+    System.out.println("Successfully created " + dataFullPath);
   }
 
   public void deleteJavaSeisData() {
-
+    seisio.delete();
   }
 
 
