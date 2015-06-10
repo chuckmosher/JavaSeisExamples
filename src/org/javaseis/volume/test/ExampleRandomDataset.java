@@ -139,11 +139,10 @@ public class ExampleRandomDataset {
   }
   
   private void insertRandomData(Seisio sio) {
+    //TODO implement
   }
 
   public void deleteJavaSeisData() {
     seisio.delete();
   }
-
-
 }

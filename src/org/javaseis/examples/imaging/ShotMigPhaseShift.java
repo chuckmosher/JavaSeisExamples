@@ -223,9 +223,6 @@ public class ShotMigPhaseShift {
     }
   }
 
-
-
-
   /**
    * Return signed symmetric wavenumber index
    * 
