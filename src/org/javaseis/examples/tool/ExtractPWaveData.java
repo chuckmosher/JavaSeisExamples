@@ -1,5 +1,7 @@
 package org.javaseis.examples.tool;
 
+import java.util.Arrays;
+
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.properties.AxisDefinition;
 import org.javaseis.services.ParameterService;
@@ -26,7 +28,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     setParameterIfUnset(parms,"outputFileSystem","/home/wilsonmr/javaseis");
     setParameterIfUnset(parms,"outputFilePath","100a-rawsynthpwaves.js");
     //TODO if you set threadCount to 2, half of the data will be missing
-    // the situation gets worse if threadCount is larger.
+    // the task fails outrigth if you set it higher than 2.
     setParameterIfUnset(parms,"threadCount","1");
     exec(parms, new ExtractPWaveData());
   }
@@ -119,8 +121,39 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
   @Override
   public boolean processVolume(ToolContext toolContext, ISeismicVolume input, ISeismicVolume output) {
     compTime.start();
-    //output.copyVolume(input);
     
+    /*{
+    //TODO extract these musings into a coherent set of tests
+      
+      //Get the global grid position of the position {0,0,0} in the local grid
+      double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
+      int[] pos = new int[] {0,0,0};
+      input.worldCoords(pos, volumePosition);  //returns 5 zeros for every volume
+      System.out.println(input.getNumDimensions());
+      System.out.println(Arrays.toString(volumePosition));
+      //This returns {0,0,0,0,0}, but I would expect it to return (for example)
+      // {0,0,0,2,3} for the 15th volume from a global grid of size {t,x,y,4,4}
+
+      //Get some information about the input and output global grids.
+      GridDefinition inputGlobalGrid = input.getGlobalGrid();
+      System.out.println(inputGlobalGrid.getNumDimensions()); //looks right
+      System.out.println(Arrays.toString(inputGlobalGrid.getAxisLengths())); //looks right
+      
+      GridDefinition outputGlobalGrid = output.getGlobalGrid();
+      System.out.println(outputGlobalGrid.getNumDimensions()); //looks right
+      System.out.println(Arrays.toString(outputGlobalGrid.getAxisLengths())); //looks right
+      
+      int[] position = new int[] {43,2,4,2,3};
+      //This shouldn't always be true
+      System.out.println(input.isPositionLocal(position));
+      //This should return true exactly when we're looking at the volume corresponding
+      //to the volume from {t,x,y,2,3}, and false otherwise.
+      
+      System.out.println(output.isPositionLocal(position));
+      //I would expect this to fail because the position is not the right size for the
+      //output grid.
+    }*/
+
     //TODO
     //Idea: copy every volume where the GEO_COMP index is equal to
     //      pwaveComponentNumber-1.
@@ -138,25 +171,8 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
       compTime.stop();
       return false;
     }
-
-  //TODO extract these musings into a coherent set of tests
-  /*  {
-      double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
-      int[] pos = new int[] {0,0,0};
-      input.worldCoords(pos, volumePosition);  //returns 5 zeros for every volume
-      System.out.println(input.getNumDimensions());
-      System.out.println(Arrays.toString(volumePosition));
-
-      GridDefinition whatisthis = input.getGlobalGrid();
-      System.out.println(whatisthis.getNumDimensions());
-      System.out.println(Arrays.toString(whatisthis.getAxisLengths()));
-      int[] position = new int[] {43,2,4,2,3};
-      //This shouldn't always be true
-      System.out.println(input.isPositionLocal(position));
-    }
-    */
   }
-  
+
   @Override
   public boolean outputVolume(ToolContext toolContext, ISeismicVolume output) {
     return false;
