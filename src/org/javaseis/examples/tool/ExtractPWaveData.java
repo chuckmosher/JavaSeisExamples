@@ -26,6 +26,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
     setParameterIfUnset(parms,"outputFileSystem","/home/wilsonmr/javaseis");
     setParameterIfUnset(parms,"outputFilePath","100a-rawsynthpwaves.js");
     //TODO if you set threadCount to 2, half of the data will be missing
+    // the situation gets worse if threadCount is larger.
     setParameterIfUnset(parms,"threadCount","1");
     exec(parms, new ExtractPWaveData());
   }
@@ -142,7 +143,7 @@ public class ExtractPWaveData extends StandAloneVolumeTool {
   /*  {
       double[] volumePosition = new double[toolContext.inputGrid.getNumDimensions()];
       int[] pos = new int[] {0,0,0};
-      input.worldCoords(pos, volumePosition);
+      input.worldCoords(pos, volumePosition);  //returns 5 zeros for every volume
       System.out.println(input.getNumDimensions());
       System.out.println(Arrays.toString(volumePosition));
 

@@ -3,6 +3,7 @@ package org.javaseis.volume.test;
 import java.io.File;
 
 import org.javaseis.io.Seisio;
+import org.javaseis.examples.plot.JavaSeisMovieRunner;
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.properties.AxisDefinition;
 import org.javaseis.properties.AxisLabel;
@@ -11,15 +12,14 @@ import org.javaseis.util.SeisException;
 import org.javaseis.properties.Units;
 
 /**
- * Create an example JavaSeis data set that can be read in as a single SeismicVolume,
- * filled with random numbers. For testing purposes.
+ * Create an example JavaSeis data set for testing purposes.
  * 
  * This class only makes and cleans up the data set.
  * 
  * @author Marcus Wilson 2015
  *
  */
-public class ExampleRandomSeismicVolume {
+public class ExampleRandomDataset {
 
   private static final int DEFAULT_NUM_DIMENSIONS = 5;
   public static final String defaultPath = defaultDataLocation();
@@ -33,9 +33,15 @@ public class ExampleRandomSeismicVolume {
 
   public Seisio seisio;
   public GridDefinition gridDefinition;
+  
+  //basic sanity check only.  The rest of the tests are in the corresponding JTest
+  public static void main(String[] args) {
+    ExampleRandomDataset dataset = new ExampleRandomDataset();
+    JavaSeisMovieRunner.showMovie(defaultPath);
+  }
 
   //Noarg constructor
-  public ExampleRandomSeismicVolume() {
+  public ExampleRandomDataset() {
     dataFullPath = defaultPath;
     exceptionIfFileAlreadyExists();
     AxisDefinition[] axes = defaultAxisDefinitions();
@@ -44,7 +50,7 @@ public class ExampleRandomSeismicVolume {
       seisio = createSeisIO(gridDefinition);
       createJavaSeisData(seisio);
     } catch (SeisException e) {
-
+      e.printStackTrace();
     }
   }
 
@@ -55,6 +61,8 @@ public class ExampleRandomSeismicVolume {
     return dataFullPath;
   }
 
+  //TODO replace UnsupportedOperationException with a javaseis specific exception
+  // say DatasetAlreadyExistsException
   private void exceptionIfFileAlreadyExists() {
     assert dataFullPath != null;
     if (dataSetExists(dataFullPath)) {
@@ -128,6 +136,9 @@ public class ExampleRandomSeismicVolume {
 
   private void createJavaSeisData(Seisio sio) throws SeisException {
     sio.create();
+  }
+  
+  private void insertRandomData(Seisio sio) {
   }
 
   public void deleteJavaSeisData() {
