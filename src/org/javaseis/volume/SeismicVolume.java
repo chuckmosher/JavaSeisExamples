@@ -34,19 +34,31 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
   IParallelContext pc;
 
   public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition) {
-    this(parallelContext,globalGridDefinition,
-        BinGrid.simpleBinGrid((int)globalGridDefinition.getAxisLength(1), (int)globalGridDefinition.getAxisLength(1)),
-        ElementType.FLOAT, 1, Decomposition.BLOCK, 0 );
+    this(parallelContext, globalGridDefinition, BinGrid.simpleBinGrid(
+        (int) globalGridDefinition.getAxisLength(1), (int) globalGridDefinition.getAxisLength(1)),
+        ElementType.FLOAT, 1, Decomposition.BLOCK, 0);
+  }
+
+  public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition, long maxlength) {
+    this(parallelContext, globalGridDefinition, BinGrid.simpleBinGrid(
+        (int) globalGridDefinition.getAxisLength(1), (int) globalGridDefinition.getAxisLength(1)),
+        ElementType.FLOAT, 1, Decomposition.BLOCK, maxlength);
   }
 
   public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition,
       BinGrid binGridIn) {
-    this(parallelContext,globalGridDefinition,binGridIn,
-        ElementType.FLOAT, 1, Decomposition.BLOCK, 0 );
+    this(parallelContext, globalGridDefinition, binGridIn, ElementType.FLOAT, 1, Decomposition.BLOCK, 0);
   }
-  
+
   public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition,
-      BinGrid binGridIn, ElementType volumeElementType, int volumeElementCount, int volumeDecompType, long maxLength ) {
+      BinGrid binGridIn, long maxlength) {
+    this(parallelContext, globalGridDefinition, binGridIn, ElementType.FLOAT, 1, Decomposition.BLOCK,
+        maxlength);
+  }
+
+  public SeismicVolume(IParallelContext parallelContext, GridDefinition globalGridDefinition,
+      BinGrid binGridIn, ElementType volumeElementType, int volumeElementCount, int volumeDecompType,
+      long maxLength) {
     pc = parallelContext;
     AxisDefinition[] axis = new AxisDefinition[3];
     volumeShape = new int[3];
@@ -56,7 +68,7 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
       volumeShape[i] = (int) axis[i].getLength();
       length *= volumeShape[i];
     }
-    maxLength = Math.max(maxLength,length);
+    maxLength = Math.max(maxLength, length);
     localGrid = new GridDefinition(3, axis);
     binGrid = binGridIn;
     elementType = volumeElementType;
@@ -65,17 +77,17 @@ public class SeismicVolume implements ISeismicVolume, IRegularGrid {
     allocate(maxLength);
   }
 
+  @Override
   public void allocate(long maxLength) {
-    volume = new DistributedArray(pc, float.class, 3, elementCount, volumeShape, decompType,
-        maxLength);
+    volume = new DistributedArray(pc, float.class, 3, elementCount, volumeShape, decompType, maxLength);
     volume.allocate();
     volumeGrid = new RegularGrid(volume);
   }
-  
+
   @Override
   public long shapeLength() {
     long length = elementCount;
-    for (int i=0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
       length *= volumeShape[i];
     }
     return length;

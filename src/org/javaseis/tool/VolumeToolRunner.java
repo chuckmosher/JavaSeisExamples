@@ -8,6 +8,8 @@ import org.javaseis.services.ParameterService;
 import org.javaseis.volume.ISeismicVolume;
 import org.javaseis.volume.SeismicVolume;
 
+import beta.javaseis.distributed.Decomposition;
+import beta.javaseis.distributed.DistributedArray;
 import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
@@ -15,8 +17,7 @@ import beta.javaseis.parallel.ParallelTaskExecutor;
 public class VolumeToolRunner {
   List<IVolumeTool> tools;
   ToolContext[] toolContext;
-  ISeismicVolume[] inputVolume;
-  ISeismicVolume[] outputVolume;
+  ISeismicVolume[] vol;
   int toolCount;
   IParallelContext pc;
 
@@ -24,8 +25,7 @@ public class VolumeToolRunner {
     tools = toolList;
     toolCount = toolList.size();
     toolContext = new ToolContext[toolCount];
-    inputVolume = new ISeismicVolume[toolCount];
-    outputVolume = new ISeismicVolume[toolCount];
+    vol = new ISeismicVolume[2];
   }
 
   public static void exec(ParameterService parms, List<IVolumeTool> toolList) {
@@ -52,13 +52,12 @@ public class VolumeToolRunner {
       throw new RuntimeException("First tool did not provide an outputGridDefinition");
     for (int i = 1; i < tools.size(); i++) {
       toolContext[i] = new ToolContext(parms);
-      toolContext[i].mergeFlowMaps(toolContext[i-1]);
-      toolContext[i].putToolGlobal(ToolContext.INPUT_GRID, currentGrid );
-      toolContext[i].putToolGlobal(ToolContext.OUTPUT_GRID, currentGrid );
+      toolContext[i].mergeFlowMaps(toolContext[i - 1]);
+      toolContext[i].putToolGlobal(ToolContext.INPUT_GRID, currentGrid);
+      toolContext[i].putToolGlobal(ToolContext.OUTPUT_GRID, currentGrid);
       tools.get(i).serialInit(toolContext[i]);
       currentGrid = (GridDefinition) toolContext[i].getToolGlobal(ToolContext.OUTPUT_GRID);
-      if (currentGrid == null)
-        throw new RuntimeException("Tool did not provide an outputGridDefinition");
+      if (currentGrid == null) throw new RuntimeException("Tool did not provide an outputGridDefinition");
     }
   }
 
@@ -66,6 +65,13 @@ public class VolumeToolRunner {
     for (int i = 0; i < tools.size(); i++) {
       tools.get(i).serialFinish(toolContext[i]);
     }
+  }
+
+  public static long getShapeLength(IParallelContext pc, long[] shape) {
+    int[] paddedShape = new int[] { (int) shape[0], (int) shape[2],
+        (int) Decomposition.paddedLength(shape[2], pc.size()) };
+    paddedShape[2] = (int) Decomposition.paddedLength(shape[2], pc.size());
+    return DistributedArray.getShapeLength(3, 1, paddedShape);
   }
 
   public class VolumeRunnerTask extends ParallelTask {
@@ -80,10 +86,9 @@ public class VolumeToolRunner {
     public void parallelProcess() {// Create the input and output seismic volumes
 
       int inputToolIndex = 0;
+      int ivol = 0;
       while (inputToolIndex < toolCount) {
-
         for (int i = inputToolIndex; i < toolCount; i++) {
-
         }
       }
     }
@@ -93,17 +98,22 @@ public class VolumeToolRunner {
       toolContext[0].setParallelContext(pc);
       tools.get(0).parallelInit(toolContext[0]);
       GridDefinition currentGrid = (GridDefinition) toolContext[0].getToolGlobal(ToolContext.OUTPUT_GRID);
-      inputVolume[0] = null;
-      outputVolume[0] = new SeismicVolume(pc,currentGrid);
+      long maxlength = getShapeLength(pc, currentGrid.getAxisLengths());
       for (int i = 1; i < toolCount; i++) {
         toolContext[i].setParallelContext(pc);
-        toolContext[i].mergeFlowMaps(toolContext[i-1]);
-        toolContext[i].putToolGlobal(ToolContext.INPUT_GRID, currentGrid );
-        inputVolume[i] = outputVolume[i-1];
+        toolContext[i].mergeFlowMaps(toolContext[i - 1]);
+        toolContext[i].putToolGlobal(ToolContext.INPUT_GRID, currentGrid);
         tools.get(i).parallelInit(toolContext[i]);
         currentGrid = (GridDefinition) toolContext[i].getToolGlobal(ToolContext.OUTPUT_GRID);
+        maxlength = Math.max(maxlength, getShapeLength(pc, currentGrid.getAxisLengths()));
       }
-      toolContext[0].mergeFlowMaps(toolContext[toolCount-1]);
+      toolContext[0].mergeFlowMaps(toolContext[toolCount - 1]);
+      vol[0] = new SeismicVolume(pc, (GridDefinition) toolContext[0].getToolGlobal(ToolContext.OUTPUT_GRID),
+          maxlength);
+      if (toolCount > 1) {
+        vol[1] = new SeismicVolume(pc,
+            (GridDefinition) toolContext[1].getToolGlobal(ToolContext.OUTPUT_GRID), maxlength);
+      }
     }
 
     public void parallelFinish() {
