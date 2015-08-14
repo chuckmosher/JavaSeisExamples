@@ -4,8 +4,9 @@ import java.util.Arrays;
 
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.services.ParameterService;
+import org.javaseis.tool.IVolumeTool;
 import org.javaseis.tool.StandAloneVolumeTool;
-import org.javaseis.tool.ToolContext;
+import org.javaseis.tool.ToolState;
 import org.javaseis.util.IntervalTimer;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
@@ -18,7 +19,7 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ReduceScalar;
 
 public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
-
+  private static final long serialVersionUID = 1L;
   IParallelContext pc;
   PositionIterator volPos;
   IntervalTimer compTimer, totalTimer;
@@ -27,14 +28,13 @@ public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
 
   public static void main(String[] args) {
     ParameterService parms = new ParameterService(args);
-    if (parms.getParameter(ToolContext.INPUT_FILE_SYSTEM) == "null") {
-      parms.setParameter(ToolContext.INPUT_FILE_SYSTEM,
-          System.getProperty("java.io.tmpdir"));
+    if (parms.getParameter(ToolState.INPUT_FILE_SYSTEM) == "null") {
+      parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
     }
-    if (parms.getParameter(ToolContext.INPUT_FILE_PATH) == "null") {
-      parms.setParameter(ToolContext.INPUT_FILE_PATH, "temp.js");
+    if (parms.getParameter(ToolState.INPUT_FILE_PATH) == "null") {
+      parms.setParameter(ToolState.INPUT_FILE_PATH, "temp.js");
     }
-    parms.setParameter(ToolContext.TASK_COUNT,"4");
+    parms.setParameter(ToolState.TASK_COUNT, "4");
     try {
       exec(parms, new ExampleStandAloneInputTool());
     } catch (SeisException e) {
@@ -44,19 +44,19 @@ public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
   }
 
   @Override
-  public void serialInit(ToolContext toolContext) {
-    if( (GridDefinition) toolContext.getFlowGlobal(ToolContext.INPUT_GRID) == null)
+  public void serialInit(ToolState toolContext) {
+    if ((GridDefinition) toolContext.getFlowGlobal(ToolState.INPUT_GRID) == null)
       throw new RuntimeException("No input grid defined");
-    
+
   }
 
   @Override
-  public void parallelInit(ToolContext toolContext) {
+  public void parallelInit(ToolState toolContext) {
     totalTimer = new IntervalTimer();
     totalTimer.start();
     pc = toolContext.getParallelContext();
-    inputGrid = (GridDefinition) toolContext.getFlowGlobal(ToolContext.INPUT_GRID);
-    pc.masterPrint("Input Grid Definition:\n" + inputGrid );
+    inputGrid = (GridDefinition) toolContext.getFlowGlobal(ToolState.INPUT_GRID);
+    pc.masterPrint("Input Grid Definition:\n" + inputGrid);
     compTimer = new IntervalTimer();
     int nvol = (int) inputGrid.getAxisLength(3);
     int nhyp = (int) inputGrid.getAxisLength(4);
@@ -64,12 +64,10 @@ public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
   }
 
   @Override
-  public boolean processVolume(ToolContext toolContext, ISeismicVolume input,
-      ISeismicVolume output) {
+  public boolean processVolume(ToolState toolContext, ISeismicVolume input, ISeismicVolume output) {
     if (volPos.hasNext()) {
       volPos.next();
-      pc.masterPrint("Process Input Volume at position: "
-          + Arrays.toString(volPos.getPosition()));
+      pc.masterPrint("Process Input Volume at position: " + Arrays.toString(volPos.getPosition()));
       compTimer.start();
       ITraceIterator ti = output.getTraceIterator();
       float[] trc;
@@ -77,11 +75,11 @@ public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
       double max = Double.MIN_VALUE;
       while (ti.hasNext()) {
         trc = ti.next();
-        min = Math.min(min,ArrayMath.min(trc));
-        max = Math.max(max,ArrayMath.max(trc));
-      }     
-      pc.masterPrint("  Min,Max values in volume: " + ReduceScalar.reduceDouble(pc, min, Operation.MIN) + 
-          ", " + ReduceScalar.reduceDouble(pc, max, Operation.MAX));
+        min = Math.min(min, ArrayMath.min(trc));
+        max = Math.max(max, ArrayMath.max(trc));
+      }
+      pc.masterPrint("  Min,Max values in volume: " + ReduceScalar.reduceDouble(pc, min, Operation.MIN) + ", "
+          + ReduceScalar.reduceDouble(pc, max, Operation.MAX));
       compTimer.stop();
       return true;
     }
@@ -89,21 +87,27 @@ public class ExampleStandAloneInputTool extends StandAloneVolumeTool {
   }
 
   @Override
-  public boolean outputVolume(ToolContext toolContext, ISeismicVolume output) {
+  public boolean outputVolume(ToolState toolContext, ISeismicVolume output) {
     return false;
   }
 
   @Override
-  public void parallelFinish(ToolContext toolContext) {
-    compTime = ReduceScalar.reduceDouble(pc,compTimer.elapsedTime(),Operation.SUM);
+  public void parallelFinish(ToolState toolContext) {
+    compTime = ReduceScalar.reduceDouble(pc, compTimer.elapsedTime(), Operation.SUM);
     totalTimer.stop();
-    totalTime = ReduceScalar.reduceDouble(pc,totalTimer.elapsedTime(),Operation.SUM);
-    pc.masterPrint("Completed ExampleStandAloneInputTool:" +
-      "\n  Computation Time: " + compTime + "\n  Total Time: " + totalTime );
+    totalTime = ReduceScalar.reduceDouble(pc, totalTimer.elapsedTime(), Operation.SUM);
+    pc.masterPrint("Completed ExampleStandAloneInputTool:" + "\n  Computation Time: " + compTime + "\n  Total Time: "
+        + totalTime);
   }
 
   @Override
-  public void serialFinish(ToolContext toolContext) {
-    
+  public void serialFinish(ToolState toolContext) {
+
+  }
+
+  @Override
+  public void setState(IVolumeTool anotherTool) throws SeisException {
+    // TODO Auto-generated method stub
+
   }
 }

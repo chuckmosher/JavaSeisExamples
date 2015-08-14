@@ -6,7 +6,6 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
 
-
 /**
  * Example showing how the JavaSeis parallel thread model is used. The top level
  * class has a main method that expects the number of tasks to be used supplied

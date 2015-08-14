@@ -11,13 +11,12 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
 
-
 /**
  * Example showing how to use a 3D array to support a 2D distributed array.
  * 
  */
 public class ExampleParallel2D {
-  
+
   public static void main(String[] args) {
     // Default number of tasks to one
     int ntask = 2;
@@ -34,7 +33,6 @@ public class ExampleParallel2D {
     }
   }
 
- 
   public static class Parallel2DTask extends ParallelTask {
     @Override
     public void run() {
@@ -44,23 +42,23 @@ public class ExampleParallel2D {
       pc.serialPrint("Yo from task " + pc.rank());
       int[] shape = new int[] { 1, 113, 255 };
       int[] dtypes = new int[] { Decomposition.NONE, Decomposition.BLOCK, Decomposition.BLOCK };
-      int[] tshape = DistributedArray.getTransposeShape(pc, 3, shape, dtypes );
-      //int[] tshape = shape.clone();
-      DistributedArray da3d = new DistributedArray(pc, ElementType.FLOAT, tshape, dtypes );
+      int[] tshape = DistributedArray.getTransposeShape(pc, 3, shape, dtypes);
+      // int[] tshape = shape.clone();
+      DistributedArray da3d = new DistributedArray(pc, ElementType.FLOAT, tshape, dtypes);
       int n0 = tshape[0];
       int n1 = tshape[1];
       int n2 = tshape[2];
       int[] pos = new int[3];
       float[] trc = new float[tshape[0]];
       da3d.resetTraceIterator();
-      int i,j;
+      int i, j;
       float val;
       while (da3d.hasNext()) {
         da3d.next();
         pos = da3d.getPosition();
         j = pos[2];
         i = pos[1];
-        val = (float)(n1*j + i);
+        val = (float) (n1 * j + i);
         trc[0] = val;
         da3d.putTrace(trc);
       }
@@ -71,9 +69,10 @@ public class ExampleParallel2D {
         pos = da3d.getPosition();
         i = pos[2];
         j = pos[1];
-        val = (float)(n1*j + i);
+        val = (float) (n1 * j + i);
         da3d.getTrace(trc);
-        if (Math.abs(val-trc[0]) > 1e-6) throw new RuntimeException("Match failed at i,j " + i + "," + j);
+        if (Math.abs(val - trc[0]) > 1e-6)
+          throw new RuntimeException("Match failed at i,j " + i + "," + j);
       }
       pc.serialPrint("Transpose Test Completed");
     }

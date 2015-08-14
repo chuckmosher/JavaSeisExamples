@@ -27,53 +27,42 @@ public class ExampleCreateRandomFile {
     // Convert arguments to a ParameterSet object for easy access
     ParameterSet parset = ParameterSetIO.argsToParameters(args);
     // Get path name for new dataset - default to "jsCreateTest" in User.home
-    String path = parset.getString("path", System.getProperty("user.home")
-        + File.separator + "jsCreateTest");
+    String path = parset.getString("path", System.getProperty("user.home") + File.separator + "jsCreateTest");
 
-    System.out
-        .println("Create JavaSeis CDP dataset with random numbers\nPath: "
-            + path);
+    System.out.println("Create JavaSeis CDP dataset with random numbers\nPath: " + path);
 
     // Get the size of the dataset to be created
     int[] size = parset.getInts("size", new int[] { 250, 30, 100, 10 });
     if (size.length != 4) {
-      throw new RuntimeException(
-          "Wrong number of elements for size - should be 4");
+      throw new RuntimeException("Wrong number of elements for size - should be 4");
     }
 
     System.out.println("Size: " + Arrays.toString(size));
     // Get the spacing of the dataset to be created
 
-    double[] deltas = parset.getDoubles("deltas",
-        new double[] { 4, 100, 25, 50 });
+    double[] deltas = parset.getDoubles("deltas", new double[] { 4, 100, 25, 50 });
     if (deltas.length != 4) {
-      throw new RuntimeException(
-          "Wrong number of elements for deltas - should be 4");
+      throw new RuntimeException("Wrong number of elements for deltas - should be 4");
     }
 
     long[] ldeltas = parset.getLongs("ldeltas", new long[] { 4, 4, 1, 2 });
     if (ldeltas.length != 4) {
-      throw new RuntimeException(
-          "Wrong number of elements for ldeltas - should be 4");
+      throw new RuntimeException("Wrong number of elements for ldeltas - should be 4");
     }
 
     // Get the origins of the dataset to be created
-    double[] origins = parset
-        .getDoubles("origins", new double[] { 0, 0, 0, 0 });
+    double[] origins = parset.getDoubles("origins", new double[] { 0, 0, 0, 0 });
     if (origins.length != 4) {
-      throw new RuntimeException(
-          "Wrong number of elements for origins - should be 4");
+      throw new RuntimeException("Wrong number of elements for origins - should be 4");
     }
 
     long[] lorigins = parset.getLongs("lorigins", new long[] { 0, 1, 1, 1 });
     if (lorigins.length != 4) {
-      throw new RuntimeException(
-          "Wrong number of elements for lorigins - should be 4");
+      throw new RuntimeException("Wrong number of elements for lorigins - should be 4");
     }
 
     // Make a GridDefinition
-    GridDefinition grid = GridDefinition.standardGrid(GridDefinition.CDP, size,
-        lorigins, ldeltas, origins, deltas);
+    GridDefinition grid = GridDefinition.standardGrid(GridDefinition.CDP, size, lorigins, ldeltas, origins, deltas);
 
     // Be sure that it doesn't already exist (which is an error).
     Seisio.delete(path);
@@ -100,7 +89,7 @@ public class ExampleCreateRandomFile {
           frm.putTrace(trc, position);
         }
         position[0] = position[1] = 0;
-        sio.writeMultiArray(frm, position );
+        sio.writeMultiArray(frm, position);
       }
     }
 

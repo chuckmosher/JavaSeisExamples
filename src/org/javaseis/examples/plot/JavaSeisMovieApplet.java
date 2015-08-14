@@ -7,13 +7,13 @@ import beta.javaseis.plot.JavaSeisMovie;
 import beta.javaseis.plot.RandomMovieSource;
 
 public class JavaSeisMovieApplet extends JApplet {
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Create the applet.
-	 */
-	public JavaSeisMovieApplet() {
-	    JavaSeisMovie.display();
-	}
+  /**
+   * Create the applet.
+   */
+  public JavaSeisMovieApplet() {
+    JavaSeisMovie.display();
+  }
 
 }

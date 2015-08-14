@@ -67,9 +67,8 @@ public class ShotMigPhaseShift {
    * @param outputImage - Output RegularGrid for the image in X,Y,Z domain
    * @param modelVelocity - Interval velocity model for imaging
    */
-  public ShotMigPhaseShift(float padx, float pady, int maxFreqIndex,
-      int maxDepthIndex, float depthStep, RegularGrid recordedData,
-      RegularGrid initialSource, RegularGrid outputImage, float[] velocity) {
+  public ShotMigPhaseShift(float padx, float pady, int maxFreqIndex, int maxDepthIndex, float depthStep,
+      RegularGrid recordedData, RegularGrid initialSource, RegularGrid outputImage, float[] velocity) {
     // Check a few things for consistency
     // if (recordedData.getNumDimensions() != 3 ||
     // recordedData.getGridDefinition().getAxisDomain(2) !=
@@ -77,8 +76,7 @@ public class ShotMigPhaseShift {
     // throw new
     // IllegalArgumentException("Input recordedData must be (X,Y,F) domain");
     if (Arrays.equals(recordedData.getLengths(), initialSource.getLengths()) == false) {
-      throw new IllegalArgumentException(
-          "Input recordedData and initialSource must be conformable");
+      throw new IllegalArgumentException("Input recordedData and initialSource must be conformable");
     }
     // Store references to input parameters
     nf = maxFreqIndex;
@@ -91,10 +89,10 @@ public class ShotMigPhaseShift {
     // Save the parallel context packaged with the input data
     pc = recordedData.getGrid().getParallelContext();
     // Initialize 2D FFT
-    nx = rcvr.getGrid().getLength(0)/2;
+    nx = rcvr.getGrid().getLength(0) / 2;
     ny = rcvr.getGrid().getLength(1);
-    f2d = new Fft2d(nx, ny, padx, pady, IFFT.Type.COMPLEX, IFFT.Type.COMPLEX,
-        -1, -1, IFFT.Scale.SYMMETRIC, IFFT.Scale.SYMMETRIC);
+    f2d = new Fft2d(nx, ny, padx, pady, IFFT.Type.COMPLEX, IFFT.Type.COMPLEX, -1, -1, IFFT.Scale.SYMMETRIC,
+        IFFT.Scale.SYMMETRIC);
     nkx = f2d.getLength(0);
     nky = f2d.getLength(1);
     nqx = nkx / 2;
@@ -184,35 +182,35 @@ public class ShotMigPhaseShift {
    * @param depthStep - input depth step
    * @param p[nky][2*nkx] - input/output complex wavefield array array
    */
-  public void applyPhaseShift(int ifreq, float v, float depthStep, float[][] shot, float[][] rcvr ) {
+  public void applyPhaseShift(int ifreq, float v, float depthStep, float[][] shot, float[][] rcvr) {
     final double EPS = 1e-12;
     // Wavenumber values
     double kx2, ky2, kz2, shift;
     // K vector magnitude
-    double omega = dw*ifreq;
+    double omega = dw * ifreq;
     double wv2 = (omega * omega) / (v * v);
     // Wavenumber delta values squared
-    double dkx2 = dkx*dkx;
-    double dky2 = dky*dky;
+    double dkx2 = dkx * dkx;
+    double dky2 = dky * dky;
     // Signed wavenumber index values
     int kx, ky;
     // Outer loop over Ky axis
     for (int j = 0; j < nky; j++) {
       // Get signed wavenumber index for Y
-      ky = (j <= nqy ? j : j-nky);
+      ky = (j <= nqy ? j : j - nky);
       ky2 = dky2 * ky * ky;
       // Inner loop over Kx axis
       for (int i = 0; i < nkx; i++) {
         // Signed wavenumber index for X
-        kx = (i <= nqx ? i : i-nkx);
-        kx2 = dkx2* kx * kx;
+        kx = (i <= nqx ? i : i - nkx);
+        kx2 = dkx2 * kx * kx;
         // Vertical wavenumber squared
         kz2 = wv2 - kx2 - ky2;
         // Apply shift if not evanescent
         if (kz2 > EPS) {
           shift = depthStep * Math.sqrt(kz2);
-          ComplexArrays.cshift(shot[j], i, shift );
-          ComplexArrays.cshift(rcvr[j], i, -shift );
+          ComplexArrays.cshift(shot[j], i, shift);
+          ComplexArrays.cshift(rcvr[j], i, -shift);
         } else {
           // Zero evanescent values
           ComplexArrays.eq(shot[j], i, 0f, 0f);
@@ -230,7 +228,7 @@ public class ShotMigPhaseShift {
    * @return signed index from 1-nyq to nyq
    */
   public static final int getKindex(int nyq, int nft, int i) {
-    return (i <= nyq ? i : i-nft);
+    return (i <= nyq ? i : i - nft);
   }
 
   /**
@@ -241,8 +239,7 @@ public class ShotMigPhaseShift {
    * @param depthStep - depth step size
    * @param p[nky][2*nkx] - input/output 2D array wavefield array
    */
-  public void applyPhaseSymmetric(float omega, float v, float depthStep,
-      float[][] p) {
+  public void applyPhaseSymmetric(float omega, float v, float depthStep, float[][] p) {
     final double EPS = 1e-12;
     // Wavenumber values
     double kx, ky, kx2, ky2, kz2, shift;
@@ -368,7 +365,7 @@ public class ShotMigPhaseShift {
     double df = 1 / (dt * nt);
     int nz = 4;
     float dz = 10;
-    int[] shape = new int[] { 2*nx, ny, nf };
+    int[] shape = new int[] { 2 * nx, ny, nf };
     double[] deltas = new double[] { dx, dy, df };
     IParallelContext pc = new UniprocessorContext();
     RegularGrid shot = new RegularGrid(shape, deltas, pc);
@@ -378,10 +375,9 @@ public class ShotMigPhaseShift {
     RegularGrid image = new RegularGrid(zshape, zdelta, pc);
     float[] vels = new float[nz];
     Arrays.fill(vels, 1000f);
-    ShotMigPhaseShift smps = new ShotMigPhaseShift(0, 0, nf, nz, dz, rcvr,
-        shot, image, vels);
+    ShotMigPhaseShift smps = new ShotMigPhaseShift(0, 0, nf, nz, dz, rcvr, shot, image, vels);
     float[][] ds = new float[ny][nx];
-    for (int i = 1; i <= nf; i+=8) {
+    for (int i = 1; i <= nf; i += 8) {
       smps.computeDepthShift(i, 1000, 100, ds);
       PlotArray2D p2d = new PlotArray2D(ds);
       p2d.display();

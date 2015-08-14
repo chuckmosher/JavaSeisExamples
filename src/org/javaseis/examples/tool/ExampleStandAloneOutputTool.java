@@ -4,10 +4,11 @@ import java.util.Arrays;
 
 import org.javaseis.grid.GridDefinition;
 import org.javaseis.services.ParameterService;
+import org.javaseis.tool.DataState;
 import org.javaseis.tool.IVolumeTool;
 import org.javaseis.tool.StandAloneVolumeTool;
-import org.javaseis.tool.ToolContext;
-import org.javaseis.tool.ToolContext.Visibility;
+import org.javaseis.tool.ToolState;
+import org.javaseis.tool.ToolState.Visibility;
 import org.javaseis.util.IntervalTimer;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
@@ -18,7 +19,7 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.util.RandomRange;
 
 public class ExampleStandAloneOutputTool implements IVolumeTool {
-
+  private static final long serialVersionUID = 1L;
   int volumeCount;
   IParallelContext pc;
   PositionIterator volPos;
@@ -26,23 +27,21 @@ public class ExampleStandAloneOutputTool implements IVolumeTool {
   RandomRange rr;
 
   @Override
-  public void serialInit(ToolContext toolContext) {
-    System.out
-        .println("\n-------- Begin ExampleStandaloneVolumeTool ------------");
-    GridDefinition outputGrid = GridDefinition.getDefault(5, new int[] { 201,
-        201, 201, 9, 5 });
-    toolContext.putObject(ToolContext.OUTPUT_GRID, outputGrid, Visibility.FLOW_GLOBAL );
+  public void serialInit(ToolState toolContext) {
+    System.out.println("\n-------- Begin ExampleStandaloneVolumeTool ------------");
+    GridDefinition outputGrid = GridDefinition.getDefault(5, new int[] { 201, 201, 201, 9, 5 });
+    DataState outputState = new DataState( outputGrid, toolContext.getIntParameter(ToolState.TASK_COUNT, 1) );
+    toolContext.putObject(ToolState.OUTPUT_DATA_STATE, outputState, Visibility.TOOL_GLOBAL);
     System.out.println("Output Grid Definition:\n" + outputGrid);
   }
 
   @Override
-  public void serialFinish(ToolContext toolContext) {
-    System.out
-        .println("\n-------- Completed ExampleStandaloneVolumeTool --------");
+  public void serialFinish(ToolState toolContext) {
+    System.out.println("\n-------- Completed ExampleStandaloneVolumeTool --------");
   }
 
   @Override
-  public void parallelInit(ToolContext toolContext) {
+  public void parallelInit(ToolState toolContext) {
     pc = toolContext.getParallelContext();
     volumeCount = 0;
     compTime = new IntervalTimer();
@@ -54,17 +53,15 @@ public class ExampleStandAloneOutputTool implements IVolumeTool {
   }
 
   @Override
-  public boolean processVolume(ToolContext toolContext, ISeismicVolume input,
-      ISeismicVolume output) {
+  public boolean processVolume(ToolState toolContext, ISeismicVolume input, ISeismicVolume output) {
     return false;
   }
 
   @Override
-  public boolean outputVolume(ToolContext toolContext, ISeismicVolume output) {
+  public boolean outputVolume(ToolState toolContext, ISeismicVolume output) {
     if (volPos.hasNext()) {
       volPos.next();
-      pc.serialPrint("Output volume at position: "
-          + Arrays.toString(volPos.getPosition()));
+      pc.serialPrint("Output volume at position: " + Arrays.toString(volPos.getPosition()));
       compTime.start();
       ITraceIterator ti = output.getTraceIterator();
 
@@ -81,23 +78,22 @@ public class ExampleStandAloneOutputTool implements IVolumeTool {
   }
 
   @Override
-  public void parallelFinish(ToolContext toolContext) {
+  public void parallelFinish(ToolState toolContext) {
     pc.serialPrint(this.getClass().getCanonicalName() + "Completed parallelFinish");
   }
-  
+
   public static void main(String[] args) {
     ParameterService parms = new ParameterService(args);
-    if (parms.getParameter(ToolContext.OUTPUT_FILE_SYSTEM) == "null") {
-      parms.setParameter(ToolContext.OUTPUT_FILE_SYSTEM,
-          System.getProperty("java.io.tmpdir"));
+    if (parms.getParameter(ToolState.OUTPUT_FILE_SYSTEM) == "null") {
+      parms.setParameter(ToolState.OUTPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
     }
-    if (parms.getParameter(ToolContext.OUTPUT_FILE_PATH) == "null") {
-      parms.setParameter(ToolContext.OUTPUT_FILE_PATH, "temp.js");
+    if (parms.getParameter(ToolState.OUTPUT_FILE_PATH) == "null") {
+      parms.setParameter(ToolState.OUTPUT_FILE_PATH, "temp.js");
     }
-    parms.setParameter(ToolContext.OUTPUT_FILE_MODE, ToolContext.OUTPUT_FILE_CREATE);
-    parms.setParameter(ToolContext.TASK_COUNT,"4");
+    parms.setParameter(ToolState.OUTPUT_FILE_MODE, ToolState.OUTPUT_FILE_CREATE);
+    parms.setParameter(ToolState.TASK_COUNT, "4");
     try {
-      StandAloneVolumeTool.exec(parms, new ExampleStandAloneOutputTool() );
+      StandAloneVolumeTool.exec(parms, new ExampleStandAloneOutputTool());
     } catch (SeisException e) {
       e.printStackTrace();
     }

@@ -6,12 +6,12 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
 
-
 /**
- * Example showing how to use the JavaSeis parallel thread model in a master-slave
- * context. The top level class has a main method that expects the number of tasks 
- * to be used supplied as the first argument to the program. If there are no arguments, 
- * one task is used. A static inner class is used to provide the worker task.
+ * Example showing how to use the JavaSeis parallel thread model in a
+ * master-slave context. The top level class has a main method that expects the
+ * number of tasks to be used supplied as the first argument to the program. If
+ * there are no arguments, one task is used. A static inner class is used to
+ * provide the worker task.
  * 
  */
 public class ExampleMasterSlave {
@@ -20,11 +20,11 @@ public class ExampleMasterSlave {
    * master and slave tasks
    * 
    * @param args - number of slaves to use (default 7)
-   *          
+   * 
    */
-  
+
   public static float[] data;
-  
+
   public static void main(String[] args) {
     // Default number of slaves to one
     int nslave = 7;
@@ -40,7 +40,7 @@ public class ExampleMasterSlave {
     pt[0] = MasterTask.class;
     data = new float[ntask];
     // The rest are workers
-    for (int i=1; i<ntask; i++) {
+    for (int i = 1; i < ntask; i++) {
       pt[i] = SlaveTask.class;
       data[i] = i;
     }

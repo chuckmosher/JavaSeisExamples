@@ -20,15 +20,15 @@ public class JTestShotMigPhaseShift {
     double df = 10;
     int nz = 4;
     double dz = 10;
-    int[] shape = new int[] { nf, ny, 2*nx };
+    int[] shape = new int[] { nf, ny, 2 * nx };
     double[] deltas = new double[] { df, dy, dx };
     IParallelContext pc = new UniprocessorContext();
-    RegularGrid shot = new RegularGrid( shape, deltas, pc ); 
-    RegularGrid rcvr = new RegularGrid( shape, deltas, pc ); 
+    RegularGrid shot = new RegularGrid(shape, deltas, pc);
+    RegularGrid rcvr = new RegularGrid(shape, deltas, pc);
     int[] zshape = new int[] { nz, nx, ny };
     double[] zdelta = new double[] { dz, dx, dy };
-    RegularGrid image = new RegularGrid( zshape, zdelta, pc );
-    
+    RegularGrid image = new RegularGrid(zshape, zdelta, pc);
+
   }
 
 }
