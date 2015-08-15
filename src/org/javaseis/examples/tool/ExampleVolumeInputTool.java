@@ -85,6 +85,7 @@ public class ExampleVolumeInputTool implements IVolumeTool {
     }
     pc.serialPrint("Read next volume ...");
     ipio.next();
+    ipio.read();
     pc.serialPrint("Read complete for position " + Arrays.toString(ipio.getFilePosition()));
     if (ipio.usesProperties()) {
       double sx = vps.getValue("SOU_XD");
