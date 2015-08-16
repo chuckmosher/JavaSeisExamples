@@ -10,6 +10,8 @@ import org.javaseis.tool.VolumeToolRunner;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
 
+import beta.javaseis.array.ITraceIterator;
+import beta.javaseis.distributed.DistributedArrayMosaicPlot;
 import beta.javaseis.parallel.ICollective.Operation;
 import beta.javaseis.parallel.IParallelContext;
 
@@ -40,26 +42,40 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     int[] filePosition = toolState.getInputPosition();
     pc.masterPrint("\nCoordinate Ranges for volume at file position: " + Arrays.toString(filePosition) + 
                    "\n                     grid position: " + Arrays.toString(gridDefinition.indexToGrid(filePosition)));
-    double[] sxyz = new double[3];
-    double[] rxyz = new double[3];
+    int[] localShape = input.getDistributedArray().getTransposeShape();
+    int n1 = localShape[1];
+    int n2 = localShape[2];
+    int ntrc = n1*n2;
+    
+    double[][] sxyz = new double[ntrc][3];
+    double[][] rxyz = new double[ntrc][3];
     double[] sxyzMin = new double[3];
     Arrays.fill(sxyzMin,Double.MAX_VALUE);
     double[] sxyzMax = new double[3];
     Arrays.fill(sxyzMax,-Double.MAX_VALUE);
     double[] rxyzMin = new double[3];
-    Arrays.fill(sxyzMin,Double.MAX_VALUE);
+    Arrays.fill(rxyzMin,Double.MAX_VALUE);
     double[] rxyzMax = new double[3];
-    Arrays.fill(sxyzMax,-Double.MAX_VALUE);
-    for (int[] pos : input) {
-      if (input.isLive(pos)) {
-      input.getCoords(pos, sxyz, rxyz );
+    Arrays.fill(rxyzMax,-Double.MAX_VALUE);
+    int j = 0;
+    int j1, j2;
+    ITraceIterator ti = input.getTraceIterator();
+    while (ti.hasNext()) {
+      ti.next();
+      int[] pos = ti.getPosition();
+      input.getCoords(pos, sxyz[j], rxyz[j] );
+      j1 = j%n1;
+      j2 = (j-j1)/n1;
+      if ((j1 ==0 && j2 == 0) || (j1 == n1-1 && j2 == 0) || (j1 == 0 && j2 == n2-1) || (j1 == n1-1 && j2 == n2-1)) {
+        toolState.print("Position " + Arrays.toString(pos) + "  Source " + Arrays.toString(sxyz[j]) + "  Receiver " + Arrays.toString(rxyz[j]));
+      }
       for (int i=0; i<3; i++) {
-        sxyzMin[i] = Math.min(sxyz[i], sxyzMin[i]);
-        sxyzMax[i] = Math.max(sxyz[i], sxyzMax[i]);
-        rxyzMin[i] = Math.min(rxyz[i], rxyzMin[i]);
-        rxyzMax[i] = Math.max(rxyz[i], rxyzMax[i]);
+        sxyzMin[i] = Math.min(sxyz[j][i], sxyzMin[i]);
+        sxyzMax[i] = Math.max(sxyz[j][i], sxyzMax[i]);
+        rxyzMin[i] = Math.min(rxyz[j][i], rxyzMin[i]);
+        rxyzMax[i] = Math.max(rxyz[j][i], rxyzMax[i]);
       }
-      }
+      j++;
     }
     pc.serialPrint("  Local Minimum Values in volume:\n" + 
         "  Source XYZ: " + Arrays.toString(sxyzMin) + "  Receiver XYZ: " + Arrays.toString(rxyzMin));
@@ -81,6 +97,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
     }
     output.copyVolume(input);
+    new DistributedArrayMosaicPlot( "VolumeInspector", output );
     return true;
   }
 
@@ -112,10 +129,10 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       //parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
     }
     if (parms.getParameter(ToolState.INPUT_FILE_NAME) == "null") {
-      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
+      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActi45Shots.js");
       //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
     }
-    parms.setParameter(ToolState.TASK_COUNT, "2");
+    parms.setParameter(ToolState.TASK_COUNT, "1");
     try {
       VolumeToolRunner.exec(parms, toolList);
     } catch (SeisException e) {
