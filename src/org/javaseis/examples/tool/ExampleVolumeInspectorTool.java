@@ -11,7 +11,7 @@ import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
 
 import beta.javaseis.array.ITraceIterator;
-import beta.javaseis.distributed.DistributedArrayMosaicPlot;
+import beta.javaseis.distributed.DistributedArrayPlot;
 import beta.javaseis.parallel.ICollective.Operation;
 import beta.javaseis.parallel.IParallelContext;
 
@@ -19,10 +19,12 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
   private static final long serialVersionUID = 1L;
   private double[] smin, smax, rmin, rmax;
   GridDefinition gridDefinition;
+  DistributedArrayPlot plot;
 
   @Override
   public void serialInit(ToolState ts) throws SeisException {
-    ts.print(ts.toString());  }
+    ts.print(ts.toString());
+  }
 
   @Override
   public void parallelInit(IParallelContext pc, ToolState toolState) throws SeisException {
@@ -34,42 +36,47 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     smax = new double[3];
     Arrays.fill(smax, -Double.MAX_VALUE);
     rmax = smax.clone();
+    plot = new DistributedArrayPlot("VolumeInspector",
+        (ISeismicVolume) toolState.getObject(ToolState.OUTPUT_VOLUME));
   }
 
   @Override
-  public boolean processVolume(IParallelContext pc, ToolState toolState, ISeismicVolume input, ISeismicVolume output)
-      throws SeisException {
+  public boolean processVolume(IParallelContext pc, ToolState toolState, ISeismicVolume input,
+      ISeismicVolume output) throws SeisException {
     int[] filePosition = toolState.getInputPosition();
-    pc.masterPrint("\nCoordinate Ranges for volume at file position: " + Arrays.toString(filePosition) + 
-                   "\n                     grid position: " + Arrays.toString(gridDefinition.indexToGrid(filePosition)));
+    pc.masterPrint("\nCoordinate Ranges for volume at file position: " + Arrays.toString(filePosition)
+        + "\n                     grid position: "
+        + Arrays.toString(gridDefinition.indexToGrid(filePosition)));
     int[] localShape = input.getDistributedArray().getTransposeShape();
     int n1 = localShape[1];
     int n2 = localShape[2];
-    int ntrc = n1*n2;
-    
+    int ntrc = n1 * n2;
+
     double[][] sxyz = new double[ntrc][3];
     double[][] rxyz = new double[ntrc][3];
     double[] sxyzMin = new double[3];
-    Arrays.fill(sxyzMin,Double.MAX_VALUE);
+    Arrays.fill(sxyzMin, Double.MAX_VALUE);
     double[] sxyzMax = new double[3];
-    Arrays.fill(sxyzMax,-Double.MAX_VALUE);
+    Arrays.fill(sxyzMax, -Double.MAX_VALUE);
     double[] rxyzMin = new double[3];
-    Arrays.fill(rxyzMin,Double.MAX_VALUE);
+    Arrays.fill(rxyzMin, Double.MAX_VALUE);
     double[] rxyzMax = new double[3];
-    Arrays.fill(rxyzMax,-Double.MAX_VALUE);
+    Arrays.fill(rxyzMax, -Double.MAX_VALUE);
     int j = 0;
     int j1, j2;
     ITraceIterator ti = input.getTraceIterator();
     while (ti.hasNext()) {
       ti.next();
       int[] pos = ti.getPosition();
-      input.getCoords(pos, sxyz[j], rxyz[j] );
-      j1 = j%n1;
-      j2 = (j-j1)/n1;
-      if ((j1 ==0 && j2 == 0) || (j1 == n1-1 && j2 == 0) || (j1 == 0 && j2 == n2-1) || (j1 == n1-1 && j2 == n2-1)) {
-        toolState.print("Position " + Arrays.toString(pos) + "  Source " + Arrays.toString(sxyz[j]) + "  Receiver " + Arrays.toString(rxyz[j]));
+      input.getCoords(pos, sxyz[j], rxyz[j]);
+      j1 = j % n1;
+      j2 = (j - j1) / n1;
+      if ((j1 == 0 && j2 == 0) || (j1 == n1 - 1 && j2 == 0) || (j1 == 0 && j2 == n2 - 1)
+          || (j1 == n1 - 1 && j2 == n2 - 1)) {
+        toolState.print("Position " + Arrays.toString(pos) + "  Source " + Arrays.toString(sxyz[j])
+            + "  Receiver " + Arrays.toString(rxyz[j]));
       }
-      for (int i=0; i<3; i++) {
+      for (int i = 0; i < 3; i++) {
         sxyzMin[i] = Math.min(sxyz[j][i], sxyzMin[i]);
         sxyzMax[i] = Math.max(sxyz[j][i], sxyzMax[i]);
         rxyzMin[i] = Math.min(rxyz[j][i], rxyzMin[i]);
@@ -77,19 +84,19 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
       j++;
     }
-    pc.serialPrint("  Local Minimum Values in volume:\n" + 
-        "  Source XYZ: " + Arrays.toString(sxyzMin) + "  Receiver XYZ: " + Arrays.toString(rxyzMin));
-    pc.serialPrint("  Local Maximum Values in volume:\n" + 
-        "  Source XYZ: " + Arrays.toString(sxyzMax) + "  Receiver XYZ: " + Arrays.toString(rxyzMax));
+    pc.serialPrint("  Local Minimum Values in volume:\n" + "  Source XYZ: " + Arrays.toString(sxyzMin)
+        + "  Receiver XYZ: " + Arrays.toString(rxyzMin));
+    pc.serialPrint("  Local Maximum Values in volume:\n" + "  Source XYZ: " + Arrays.toString(sxyzMax)
+        + "  Receiver XYZ: " + Arrays.toString(rxyzMax));
     pc.reduceDouble(sxyzMin, 0, sxyzMin, 0, 3, Operation.MIN);
     pc.reduceDouble(sxyzMin, 0, sxyzMin, 0, 3, Operation.MIN);
 
-    pc.serialPrint("Global Minimum Values in volume:\n" + 
-        "  Source XYZ: " + Arrays.toString(sxyzMin) + "  Receiver XYZ: " + Arrays.toString(rxyzMin));
-    pc.serialPrint("Global Maximum Values in volume:\n" + 
-        "  Source XYZ: " + Arrays.toString(sxyzMax) + "  Receiver XYZ: " + Arrays.toString(rxyzMax));
+    pc.serialPrint("Global Minimum Values in volume:\n" + "  Source XYZ: " + Arrays.toString(sxyzMin)
+        + "  Receiver XYZ: " + Arrays.toString(rxyzMin));
+    pc.serialPrint("Global Maximum Values in volume:\n" + "  Source XYZ: " + Arrays.toString(sxyzMax)
+        + "  Receiver XYZ: " + Arrays.toString(rxyzMax));
     if (pc.isMaster()) {
-      for (int i=0; i<3; i++) {
+      for (int i = 0; i < 3; i++) {
         smin[i] = Math.min(smin[i], sxyzMin[i]);
         smax[i] = Math.max(smax[i], sxyzMax[i]);
         rmin[i] = Math.min(rmin[i], rxyzMin[i]);
@@ -97,27 +104,27 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
     }
     output.copyVolume(input);
-    new DistributedArrayMosaicPlot( "VolumeInspector", output );
+    plot.display(output);
     return true;
   }
 
   @Override
-  public boolean outputVolume(IParallelContext pc, ToolState toolState, ISeismicVolume output) throws SeisException {
-    // TODO Auto-generated method stub
+  public boolean outputVolume(IParallelContext pc, ToolState toolState, ISeismicVolume output)
+      throws SeisException {
     return false;
   }
 
   @Override
   public void parallelFinish(IParallelContext pc, ToolState toolState) throws SeisException {
-    toolState.print("\nGlobal Minimum Values in flow:\n" + 
-        "  Source XYZ: " + Arrays.toString(smin) + "  Receiver XYZ: " + Arrays.toString(rmin) +
-        "\nGlobal Maximum Values in flow:\n" + 
-        "  Source XYZ: " + Arrays.toString(smax) + "  Receiver XYZ: " + Arrays.toString(rmax));
+    toolState.print("\nGlobal Minimum Values in flow:\n" + "  Source XYZ: " + Arrays.toString(smin)
+        + "  Receiver XYZ: " + Arrays.toString(rmin) + "\nGlobal Maximum Values in flow:\n"
+        + "  Source XYZ: " + Arrays.toString(smax) + "  Receiver XYZ: " + Arrays.toString(rmax));
+    plot.close();
   }
 
   @Override
   public void serialFinish(ToolState toolState) throws SeisException {
-  }  
+  }
 
   public static void main(String[] args) {
     String[] toolList = new String[2];
