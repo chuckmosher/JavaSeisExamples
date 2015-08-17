@@ -11,6 +11,7 @@ import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
 
 import beta.javaseis.array.ITraceIterator;
+import beta.javaseis.distributed.DistributedArrayMosaicPlot;
 import beta.javaseis.distributed.DistributedArrayPlot;
 import beta.javaseis.parallel.ICollective.Operation;
 import beta.javaseis.parallel.IParallelContext;
@@ -104,7 +105,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
     }
     output.copyVolume(input);
-    plot.display(output);
+    DistributedArrayMosaicPlot.showAsModelDialog("Volume Insepctor",output);
     return true;
   }
 
