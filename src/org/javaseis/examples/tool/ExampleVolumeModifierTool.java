@@ -84,7 +84,7 @@ public class ExampleVolumeModifierTool implements IVolumeTool {
       //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
     }
     parms.setParameter("scalarValue", "2.0");
-    parms.setParameter(ToolState.TASK_COUNT, "1");
+    parms.setParameter(ToolState.TASK_COUNT, "4");
     try {
       VolumeToolRunner.exec(parms, toolList);
     } catch (SeisException e) {

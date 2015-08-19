@@ -1,5 +1,6 @@
 package org.javaseis.examples.tool;
 
+import java.awt.Color;
 import java.util.Arrays;
 
 import org.javaseis.grid.GridDefinition;
@@ -10,11 +11,14 @@ import org.javaseis.tool.VolumeToolRunner;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
 
+import edu.mines.jtk.mosaic.PointsView.Mark;
 import beta.javaseis.array.ITraceIterator;
 import beta.javaseis.distributed.DistributedArrayMosaicPlot;
 import beta.javaseis.distributed.DistributedArrayPlot;
 import beta.javaseis.parallel.ICollective.Operation;
 import beta.javaseis.parallel.IParallelContext;
+import beta.javaseis.plot.PlotScatterPoints;
+import beta.javaseis.plot.PointSet;
 
 public class ExampleVolumeInspectorTool implements IVolumeTool {
   private static final long serialVersionUID = 1L;
@@ -56,6 +60,10 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     double[][] sxyz = new double[ntrc][3];
     double[][] rxyz = new double[ntrc][3];
     double[] sxyzMin = new double[3];
+    float[] rx = new float[ntrc];
+    float[] ry = new float[ntrc];
+    float[] sx = new float[2];
+    float[] sy = new float[2];
     Arrays.fill(sxyzMin, Double.MAX_VALUE);
     double[] sxyzMax = new double[3];
     Arrays.fill(sxyzMax, -Double.MAX_VALUE);
@@ -70,6 +78,12 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       ti.next();
       int[] pos = ti.getPosition();
       input.getCoords(pos, sxyz[j], rxyz[j]);
+      if (j == 0) {
+        sx[0] = sx[1] = (float)sxyz[0][0];
+        sy[0] = sy[1] = (float)sxyz[0][1];
+      }
+      rx[j] = (float)rxyz[j][0];
+      ry[j] = (float)rxyz[j][1];
       j1 = j % n1;
       j2 = (j - j1) / n1;
       if ((j1 == 0 && j2 == 0) || (j1 == n1 - 1 && j2 == 0) || (j1 == 0 && j2 == n2 - 1)
@@ -105,7 +119,14 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
     }
     output.copyVolume(input);
-    DistributedArrayMosaicPlot.showAsModelDialog("Volume Insepctor",output);
+    PlotScatterPoints psp = new PlotScatterPoints("Source at " + Arrays.toString(sxyz[0]), "X coord", "Y coord" );
+    PointSet psr = new PointSet( rx, ry, Mark.CROSS, 5f, Color.BLUE  );
+    PointSet pss = new PointSet( sx, sy, Mark.FILLED_SQUARE, 5f, Color.RED );
+    psp.addPointSet(psr);
+    psp.addPointSet(pss);
+    psp.display();
+    
+    //DistributedArrayMosaicPlot.showAsModelDialog("Volume Insepctor",output);
     return true;
   }
 
@@ -137,7 +158,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       //parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
     }
     if (parms.getParameter(ToolState.INPUT_FILE_NAME) == "null") {
-      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActi45Shots.js");
+      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
       //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
     }
     parms.setParameter(ToolState.TASK_COUNT, "1");

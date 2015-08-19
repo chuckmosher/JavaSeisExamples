@@ -137,12 +137,12 @@ public class ExampleVolumeInputTool implements IVolumeTool {
     toolList[0] = ExampleVolumeInputTool.class.getCanonicalName();
     ParameterService parms = new ParameterService(args);
     if (parms.getParameter(ToolState.INPUT_FILE_SYSTEM) == "null") {
-      //parms.setParameter(ToolState.INPUT_FILE_SYSTEM, "/Data/Projects/SEG-ACTI");
-      parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
+      parms.setParameter(ToolState.INPUT_FILE_SYSTEM, "/Data/Projects/SEG-ACTI");
+      //parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
     }
     if (parms.getParameter(ToolState.INPUT_FILE_NAME) == "null") {
-      //parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
-      parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
+      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
+      //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
     }
     parms.setParameter(ToolState.TASK_COUNT, "4");
     try {
