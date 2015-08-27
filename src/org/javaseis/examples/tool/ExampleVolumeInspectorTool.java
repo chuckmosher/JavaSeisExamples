@@ -34,7 +34,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
   @Override
   public void parallelInit(IParallelContext pc, ToolState toolState) throws SeisException {
     toolState.print(toolState.toString());
-    gridDefinition = toolState.getInputState().gridDefinition;
+    gridDefinition = toolState.getInputState().getGridDefinition();
     smin = new double[3];
     Arrays.fill(smin, Double.MAX_VALUE);
     rmin = smin.clone();

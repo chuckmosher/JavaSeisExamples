@@ -41,8 +41,8 @@ public class ExampleVolumeOutputTool implements IVolumeTool {
     IParallelContext upc = new UniprocessorContext();
     opio = new FileSystemIOService(upc, outputFileSystem);
     if (opio.exists(outputFileName)) throw new SeisException("Cannot create file - file already exists");
-    GridDefinition grid = toolState.getInputState().gridDefinition;
-    BinGrid binGrid = toolState.getInputState().binGrid;
+    GridDefinition grid = toolState.getInputState().getGridDefinition();
+    BinGrid binGrid = toolState.getInputState().getBinGrid();
     opio.create(outputFileName, grid, binGrid);
     toolState.log("Created file in serial mode");
     toolState.setOutputState(new DataState(opio, toolState.getIntParameter(ToolState.TASK_COUNT, 1)));
