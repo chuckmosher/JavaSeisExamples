@@ -41,8 +41,8 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     smax = new double[3];
     Arrays.fill(smax, -Double.MAX_VALUE);
     rmax = smax.clone();
-    plot = new DistributedArrayPlot("VolumeInspector",
-        (ISeismicVolume) toolState.getObject(ToolState.OUTPUT_VOLUME));
+    /*plot = new DistributedArrayPlot("VolumeInspector",
+        (ISeismicVolume) toolState.getObject(ToolState.OUTPUT_VOLUME));*/
   }
 
   @Override
@@ -119,12 +119,12 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       }
     }
     output.copyVolume(input);
-    PlotScatterPoints psp = new PlotScatterPoints("Source at " + Arrays.toString(sxyz[0]), "X coord", "Y coord" );
+    /*PlotScatterPoints psp = new PlotScatterPoints("Source at " + Arrays.toString(sxyz[0]), "X coord", "Y coord" );
     PointSet psr = new PointSet( rx, ry, Mark.CROSS, 5f, Color.BLUE  );
     PointSet pss = new PointSet( sx, sy, Mark.FILLED_SQUARE, 5f, Color.RED );
     psp.addPointSet(psr);
     psp.addPointSet(pss);
-    psp.display();
+    psp.display();*/
     
     //DistributedArrayMosaicPlot.showAsModelDialog("Volume Insepctor",output);
     return true;
@@ -141,7 +141,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     toolState.print("\nGlobal Minimum Values in flow:\n" + "  Source XYZ: " + Arrays.toString(smin)
         + "  Receiver XYZ: " + Arrays.toString(rmin) + "\nGlobal Maximum Values in flow:\n"
         + "  Source XYZ: " + Arrays.toString(smax) + "  Receiver XYZ: " + Arrays.toString(rmax));
-    plot.close();
+    //plot.close();
   }
 
   @Override
