@@ -73,10 +73,8 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     Arrays.fill(rxyzMax, -Double.MAX_VALUE);
     int j = 0;
     int j1, j2;
-    ITraceIterator ti = input.getTraceIterator();
-    while (ti.hasNext()) {
-      ti.next();
-      int[] pos = ti.getPosition();
+    while (input.hasNext()) {      
+      int[] pos = input.next();
       input.getCoords(pos, sxyz[j], rxyz[j]);
       if (j == 0) {
         sx[0] = sx[1] = (float)sxyz[0][0];

@@ -94,12 +94,12 @@ public class ExampleVolumeInputTool implements IVolumeTool {
       double ry = vps.getValue("REC_YD");
       pc.serialPrint("Source X " + sx + " Source Y " + sy + " Receiver X " + rx + " Receiver Y " + ry);
     }
-    ITraceIterator ti = output.getTraceIterator();
-    float[] trc;
+    float[] trc = new float[output.getAxisLength(0)];
     double min = Double.MAX_VALUE;
     double max = Double.MIN_VALUE;
-    while (ti.hasNext()) {
-      trc = ti.next();
+    while (output.hasNext()) {
+      output.next();
+      output.getTrace(trc);
       min = Math.min(min, ArrayMath.min(trc));
       max = Math.max(max, ArrayMath.max(trc));
     }

@@ -38,18 +38,17 @@ public class ExampleVolumeModifierTool implements IVolumeTool {
   @Override
   public boolean processVolume(IParallelContext pc, ToolState toolState, ISeismicVolume input,
       ISeismicVolume output) {
-    // Get trace iterators for input and output
-    ITraceIterator iti = input.getTraceIterator();
-    ITraceIterator oti = output.getTraceIterator();
-    float[] trc;
+    // Allocate array to hold traces
+    float[] trc = new float[input.getAxisLength(0)];
     // Loop over input traces
-    while (iti.hasNext()) {
+    while (input.hasNext()) {
+      input.next();
       // Get the trace and multiply by scalar
-      trc = iti.next();
+      input.getTrace(trc);
       ArrayMath.mul(scalarValue, trc, trc);
       // Advance the output trace iterator and store the modified trace
-      oti.next();
-      oti.putTrace(trc);
+      output.next();
+      output.putTrace(trc);
     }
     return true;
   }
