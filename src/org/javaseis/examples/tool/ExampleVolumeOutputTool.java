@@ -11,6 +11,7 @@ import org.javaseis.services.ParameterService;
 import org.javaseis.tool.DataState;
 import org.javaseis.tool.IVolumeTool;
 import org.javaseis.tool.ToolState;
+import org.javaseis.tool.VolumeInputTool;
 import org.javaseis.tool.VolumeToolRunner;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
@@ -98,10 +99,11 @@ public class ExampleVolumeOutputTool implements IVolumeTool {
   }
 
   public static void main(String[] args) {
-    String[] toolList = new String[3];
-    toolList[0] = ExampleVolumeInputTool.class.getCanonicalName();
+    String[] toolList = new String[4];
+    toolList[0] = VolumeInputTool.class.getCanonicalName();
     toolList[1] = ExampleVolumeModifierTool.class.getCanonicalName();
-    toolList[2] = ExampleVolumeOutputTool.class.getCanonicalName();
+    toolList[2] = ExampleVolumeInspectorTool.class.getCanonicalName();
+    toolList[3] = ExampleVolumeOutputTool.class.getCanonicalName();
     ParameterService parms = new ParameterService(args);
     if (parms.getParameter(ToolState.INPUT_FILE_SYSTEM) == "null") {
       parms.setParameter(ToolState.INPUT_FILE_SYSTEM, "/Data/Projects/SEG-ACTI");
@@ -112,7 +114,7 @@ public class ExampleVolumeOutputTool implements IVolumeTool {
       //parms.setParameter(ToolState.INPUT_FILE_PATH, "temp.js");
     }
     parms.setParameter("scalarValue", "2.0");
-    parms.setParameter(ToolState.TASK_COUNT, "1");
+    parms.setParameter(ToolState.TASK_COUNT, "2");
 
     if (parms.getParameter(ToolState.OUTPUT_FILE_SYSTEM) == "null") {
       parms.setParameter(ToolState.OUTPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));

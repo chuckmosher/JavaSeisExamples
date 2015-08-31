@@ -136,7 +136,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
 
   @Override
   public void parallelFinish(IParallelContext pc, ToolState toolState) throws SeisException {
-    toolState.print("\nGlobal Minimum Values in flow:\n" + "  Source XYZ: " + Arrays.toString(smin)
+    pc.masterPrint("\nGlobal Minimum Values in flow:\n" + "  Source XYZ: " + Arrays.toString(smin)
         + "  Receiver XYZ: " + Arrays.toString(rmin) + "\nGlobal Maximum Values in flow:\n"
         + "  Source XYZ: " + Arrays.toString(smax) + "  Receiver XYZ: " + Arrays.toString(rmax));
     //plot.close();
@@ -159,7 +159,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
       //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
     }
-    parms.setParameter(ToolState.TASK_COUNT, "1");
+    parms.setParameter(ToolState.TASK_COUNT, "2");
     try {
       VolumeToolRunner.exec(parms, toolList);
     } catch (SeisException e) {

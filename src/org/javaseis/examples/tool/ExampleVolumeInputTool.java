@@ -48,7 +48,7 @@ public class ExampleVolumeInputTool implements IVolumeTool {
     toolState.log("Input file name: " + inputFileName);
     IParallelContext upc = new UniprocessorContext();
     ipio = new FileSystemIOService(upc, inputFileSystem);
-    ipio.open(inputFileName);
+    ipio.info(inputFileName);
     toolState.log("Opened file in serial mode");
     toolState.setOutputState(new DataState(ipio, toolState.getIntParameter(ToolState.TASK_COUNT, 1)));
     ipio.close();
