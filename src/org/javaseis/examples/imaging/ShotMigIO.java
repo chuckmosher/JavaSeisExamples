@@ -4,11 +4,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
+import org.javaseis.processing.framework.FileSystemIOService;
 import org.javaseis.util.SeisException;
 
 import beta.javaseis.distributed.DistributedArray;
-import beta.javaseis.distributed.FileSystemIOService;
-import beta.javaseis.distributed.IDistributedIOService;
 import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.parallel.ParallelTask;
 import beta.javaseis.parallel.ParallelTaskExecutor;
@@ -37,7 +36,7 @@ public class ShotMigIO {
       IParallelContext pc = this.getParallelContext();
       String tmpdir = System.getProperty("java.io.tmpdir");
       pc.serialPrint("Create FileSystemIOService using " + tmpdir);
-      IDistributedIOService pio = null;
+      org.javaseis.processing.framework.IDistributedIOService pio = null;
       try {
         pio = new FileSystemIOService(pc, tmpdir);
       } catch (SeisException e) {
@@ -83,7 +82,7 @@ public class ShotMigIO {
         pio.close();
         pio = null;
         System.gc();
-        pio = new FileSystemIOService(pc, tmpdir);
+        pio = new org.javaseis.processing.framework.FileSystemIOService(pc, tmpdir);
         pio.open("temp.js");
       } catch (SeisException ex) {
         throw new RuntimeException(ex);

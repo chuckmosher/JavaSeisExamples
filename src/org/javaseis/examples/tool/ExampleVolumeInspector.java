@@ -1,13 +1,15 @@
 package org.javaseis.examples.tool;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.Arrays;
 
 import org.javaseis.grid.GridDefinition;
+import org.javaseis.processing.framework.IVolumeModule;
+import org.javaseis.processing.framework.ModuleState;
+import org.javaseis.processing.framework.VolumeModuleRunner;
+import org.javaseis.processing.module.io.VolumeInput;
 import org.javaseis.services.ParameterService;
-import org.javaseis.tool.IVolumeTool;
-import org.javaseis.tool.ToolState;
-import org.javaseis.tool.VolumeToolRunner;
 import org.javaseis.util.SeisException;
 import org.javaseis.volume.ISeismicVolume;
 
@@ -20,21 +22,21 @@ import beta.javaseis.parallel.IParallelContext;
 import beta.javaseis.plot.PlotScatterPoints;
 import beta.javaseis.plot.PointSet;
 
-public class ExampleVolumeInspectorTool implements IVolumeTool {
+public class ExampleVolumeInspector implements IVolumeModule {
   private static final long serialVersionUID = 1L;
   private double[] smin, smax, rmin, rmax;
   GridDefinition gridDefinition;
   DistributedArrayPlot plot;
 
   @Override
-  public void serialInit(ToolState ts) throws SeisException {
+  public void serialInit(ModuleState ts) throws SeisException {
     ts.print(ts.toString());
   }
 
   @Override
-  public void parallelInit(IParallelContext pc, ToolState toolState) throws SeisException {
-    toolState.print(toolState.toString());
-    gridDefinition = toolState.getInputState().getGridDefinition();
+  public void parallelInit(IParallelContext pc, ModuleState ModuleState) throws SeisException {
+    ModuleState.print(ModuleState.toString());
+    gridDefinition = ModuleState.getInputState().getGridDefinition();
     smin = new double[3];
     Arrays.fill(smin, Double.MAX_VALUE);
     rmin = smin.clone();
@@ -42,13 +44,13 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
     Arrays.fill(smax, -Double.MAX_VALUE);
     rmax = smax.clone();
     /*plot = new DistributedArrayPlot("VolumeInspector",
-        (ISeismicVolume) toolState.getObject(ToolState.OUTPUT_VOLUME));*/
+        (ISeismicVolume) ModuleState.getObject(ModuleState.OUTPUT_VOLUME));*/
   }
 
   @Override
-  public boolean processVolume(IParallelContext pc, ToolState toolState, ISeismicVolume input,
+  public boolean processVolume(IParallelContext pc, ModuleState ModuleState, ISeismicVolume input,
       ISeismicVolume output) throws SeisException {
-    int[] filePosition = toolState.getInputPosition();
+    int[] filePosition = ModuleState.getInputPosition();
     pc.masterPrint("\nCoordinate Ranges for volume at file position: " + Arrays.toString(filePosition)
         + "\n                     grid position: "
         + Arrays.toString(gridDefinition.indexToGrid(filePosition)));
@@ -86,7 +88,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
       j2 = (j - j1) / n1;
       if ((j1 == 0 && j2 == 0) || (j1 == n1 - 1 && j2 == 0) || (j1 == 0 && j2 == n2 - 1)
           || (j1 == n1 - 1 && j2 == n2 - 1)) {
-        toolState.print("Position " + Arrays.toString(pos) + "  Source " + Arrays.toString(sxyz[j])
+        ModuleState.print("Position " + Arrays.toString(pos) + "  Source " + Arrays.toString(sxyz[j])
             + "  Receiver " + Arrays.toString(rxyz[j]));
       }
       for (int i = 0; i < 3; i++) {
@@ -116,7 +118,7 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
         rmax[i] = Math.max(rmax[i], rxyzMax[i]);
       }
     }
-    output.copyVolume(input);
+    output.copy(input);
     /*PlotScatterPoints psp = new PlotScatterPoints("Source at " + Arrays.toString(sxyz[0]), "X coord", "Y coord" );
     PointSet psr = new PointSet( rx, ry, Mark.CROSS, 5f, Color.BLUE  );
     PointSet pss = new PointSet( sx, sy, Mark.FILLED_SQUARE, 5f, Color.RED );
@@ -129,13 +131,13 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
   }
 
   @Override
-  public boolean outputVolume(IParallelContext pc, ToolState toolState, ISeismicVolume output)
+  public boolean outputVolume(IParallelContext pc, ModuleState ModuleState, ISeismicVolume output)
       throws SeisException {
     return false;
   }
 
   @Override
-  public void parallelFinish(IParallelContext pc, ToolState toolState) throws SeisException {
+  public void parallelFinish(IParallelContext pc, ModuleState ModuleState) throws SeisException {
     pc.masterPrint("\nGlobal Minimum Values in flow:\n" + "  Source XYZ: " + Arrays.toString(smin)
         + "  Receiver XYZ: " + Arrays.toString(rmin) + "\nGlobal Maximum Values in flow:\n"
         + "  Source XYZ: " + Arrays.toString(smax) + "  Receiver XYZ: " + Arrays.toString(rmax));
@@ -143,25 +145,22 @@ public class ExampleVolumeInspectorTool implements IVolumeTool {
   }
 
   @Override
-  public void serialFinish(ToolState toolState) throws SeisException {
+  public void serialFinish(ModuleState ModuleState) throws SeisException {
   }
+
 
   public static void main(String[] args) {
     String[] toolList = new String[2];
-    toolList[0] = ExampleVolumeInputTool.class.getCanonicalName();
-    toolList[1] = ExampleVolumeInspectorTool.class.getCanonicalName();
-    ParameterService parms = new ParameterService(args);
-    if (parms.getParameter(ToolState.INPUT_FILE_SYSTEM) == "null") {
-      parms.setParameter(ToolState.INPUT_FILE_SYSTEM, "/Data/Projects/SEG-ACTI");
-      //parms.setParameter(ToolState.INPUT_FILE_SYSTEM, System.getProperty("java.io.tmpdir"));
-    }
-    if (parms.getParameter(ToolState.INPUT_FILE_NAME) == "null") {
-      parms.setParameter(ToolState.INPUT_FILE_NAME, "SegActiShotNo1.js");
-      //parms.setParameter(ToolState.INPUT_FILE_NAME, "temp.js");
-    }
-    parms.setParameter(ToolState.TASK_COUNT, "2");
+    toolList[0] = ExampleVolumeInput.class.getCanonicalName();
+    toolList[1] = ExampleVolumeInspector.class.getCanonicalName();
+    ParameterService globalParms = new ParameterService(args);
+    ParameterService[] moduleParms = ParameterService.allocate(2);
+    String fileSystem = System.getProperty("user.home") + File.separator + "Projects/SEG-ACTI";
+    moduleParms[0].setParameter(ModuleState.INPUT_FILE_SYSTEM, fileSystem );
+    moduleParms[0].setParameter(ModuleState.INPUT_FILE_NAME, "SegActi45Shots.js");
+    globalParms.setParameter(ModuleState.TASK_COUNT, "1");
     try {
-      VolumeToolRunner.exec(parms, toolList);
+      VolumeModuleRunner.exec(globalParms, moduleParms, toolList);
     } catch (SeisException e) {
       e.printStackTrace();
     }
