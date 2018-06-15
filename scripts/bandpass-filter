@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+#
+# Script to run the bandpass filter example
+#
+# Expects gradle installDist target to have been built.
+#
+# 1. Clean previous build:
+#      ./gradlew clean
+# 2. Build runnable project:
+#      ./gradlew installDist
+#
+
+warn ( ) {
+    echo "$*"
+}
+
+die ( ) {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+BASE_NAME=`basename "$0"`
+DIR_NAME=`dirname "$0"`
+
+#echo "basename ${BASE_NAME}"
+#echo "dirname ${DIR_NAME}"
+
+SCRIPT_POST="build/install/JavaSeisExamples/bin/JavaSeisExamples"
+if [ "x${DIR_NAME}" == "x" ] ; then
+	SCRIPT="../${SCRIPT_POST}"
+elif [ "${DIR_NAME}" == "scripts" ] ; then
+	SCRIPT="${SCRIPT_POST}"
+elif [ "${DIR_NAME}" == "./scripts" ] ; then
+	SCRIPT="${SCRIPT_POST}"
+else
+	SCRIPT="${DIR_NAME}/../${SCRIPT_POST}"
+fi
+if [ ! -x ${SCRIPT} ] ; then
+	die "ERROR: script name is invalid: $SCRIPT
+
+Please build using: ./gradlew installDist"
+
+fi
+
+${SCRIPT}
+
+exit 0
