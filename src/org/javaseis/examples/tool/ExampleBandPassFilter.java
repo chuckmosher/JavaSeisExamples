@@ -21,30 +21,32 @@ public class ExampleBandPassFilter extends AFrameModule {
   float dt;
   float[] fpass;
   ActiveParm filter;
+  private static String logPrefix = ExampleBandPassFilter.class.getSimpleName() + ": ";
 
   @Override
   public void checkState(ModuleState moduleState) throws SeisException {
+    fpass = new float[4];
     fpass[0] = moduleState.getFloatParameter("loCut", 0);
     fpass[1] = moduleState.getFloatParameter("loPass", 0);
     fpass[2] = moduleState.getFloatParameter("hiPass", 0);
     fpass[3] = moduleState.getFloatParameter("hiCut", 0);
-    filter = new ActiveParm("BandPassFilter.filter",this);
-    filter.setValue(fpass);
+    //filter = new ActiveParm("BandPassFilter.filter",this);
+    //filter.setValue(fpass);
     nsamp = (int) moduleState.getInputState().getGridDefinition().getAxisLength(0);
     ntrace = (int) moduleState.getInputState().getGridDefinition().getAxisLength(0);
     dt = (float) moduleState.getInputState().getGridDefinition().getAxisPhysicalDelta(0);
-    moduleState.log("Initialized");
+    moduleState.log(logPrefix + "Initialized");
   }
 
   @Override
   public void initialize(ModuleState moduleState) {
     bpf = new BandpassFilter( nsamp, dt, 50 );
-    bpf.setFilter(fpass);
+    bpf.setFilter(fpass[0], fpass[1], fpass[2], fpass[3]);
   }
 
   @Override
   public void processFrame(ModuleState moduleState, ISeismicFrame input, ISeismicFrame output) {
-    moduleState.log("Filter Frame");
+    //moduleState.log(logPrefix + "Filter Frame");
     int ntrc = input.getTraceCount();
     float[][] in = input.getFrame();
     float[][] out = output.getFrame();
@@ -56,7 +58,7 @@ public class ExampleBandPassFilter extends AFrameModule {
 
   @Override
   public void finish(ModuleState moduleState) {
-    moduleState.log("Completed");
+    moduleState.log(logPrefix + "Completed");
   }
   
   @Override
