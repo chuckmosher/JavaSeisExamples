@@ -60,3 +60,27 @@ sourceSets {
 // This class can be run via 'gradle run' or 'gradle run --debug-jvm'
 mainClassName = "org.javaseis.examples.tool.ExampleBandPassFilter"
 
+// Additional scripts
+// Simplified after: https://www.mkyong.com/gradle/gradle-multiple-start-script-examples/
+
+task createBandpassFilterStartScripts(type: CreateStartScripts) {
+    mainClassName = 'org.javaseis.examples.tool.ExampleBandpassFilter'
+    applicationName = 'bandpass-filter'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+}
+
+task createRadialFilterStartScripts(type: CreateStartScripts) {
+    mainClassName = 'org.javaseis.examples.tool.ExampleRadialFilter'
+    applicationName = 'radial-filter'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+}
+
+applicationDistribution.into("bin") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(createBandpassFilterStartScripts)
+    from(createRadialFilterStartScripts)
+    fileMode = 0755
+}
+
