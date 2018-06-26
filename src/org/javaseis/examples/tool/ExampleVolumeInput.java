@@ -56,6 +56,11 @@ public class ExampleVolumeInput implements IVolumeModule {
     moduleState.print("Input file name: " + inputFileName);
     IParallelContext upc = new UniprocessorContext();
     ipio = new FileSystemIOService(upc, inputFileSystem);
+    boolean exists = ipio.exists(inputFileName);
+    if (!exists) {
+      throw new SeisException("File " + inputFileName + " does not exist on filesystem "
+          + inputFileSystem);
+    }
     ipio.info(inputFileName);
     moduleState.log("Opened file in serial mode");
     String buf = moduleState.getStringParameter("volumeRange", "*");
