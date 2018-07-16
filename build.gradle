@@ -10,6 +10,11 @@
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 apply plugin: 'application'
+//apply plugin: 'eclipse'
+
+//version = '1.0'
+//sourceCompatibility = 1.7
+//targetCompatibility = 1.7
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -82,5 +87,19 @@ applicationDistribution.into("bin") {
     from(createBandpassFilterStartScripts)
     from(createRadialFilterStartScripts)
     fileMode = 0755
+}
+
+// Simplified after: https://www.mkyong.com/gradle/gradle-create-a-jar-file-with-dependencies/
+// Create a single jar with all dependencies
+task allJar(type: Jar) {
+    description = 'Assembles a jar archive containing the main classes and all dependencies.'
+    //manifest {
+    //    attributes 'Implementation-Title': 'JavaSeis Examples',
+    //        'Implementation-Version': version,
+    //        'Main-Class': 'org.javaseis.examples.tool.ExampleBandPassFilter'
+    //}
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
