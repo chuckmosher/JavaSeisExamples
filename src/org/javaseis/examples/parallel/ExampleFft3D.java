@@ -36,7 +36,7 @@ public class ExampleFft3D {
 		  IParallelContext pc = this.getParallelContext();
 		  pc.serialPrint("Yo from task " + pc.rank() );
 		  // Set a shape for the 3D array
-		  int[] shape = new int[] { 250, 112, 36 };
+		  int[] shape = new int[] { 512, 512, 512 };
 		  // Create an N-Dimensional FFT with N=3
 		  SeisFft3d fft3d = new SeisFft3d(pc,shape,new float[] {0,0,0}, new int[] {-1,1,1} );
 		  // Get the shape of the data in the transform domain
