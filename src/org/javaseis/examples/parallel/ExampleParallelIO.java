@@ -120,7 +120,8 @@ public class ExampleParallelIO {
         pio.delete("temp.js");   
       } catch (SeisException ex) {
         throw new RuntimeException(ex);
-      } 
+      }
+      pc.serialPrint("Test Succeeded");
     }
   }
 }

@@ -20,7 +20,7 @@ public class ExampleParallel2D {
   
   public static void main(String[] args) {
     // Default number of tasks to one
-    int ntask = 2;
+    int ntask = 8;
     // Check to see if any arguments were provided
     if (args != null && args.length > 0) {
       // Convert the argument to an integer if it was provided
@@ -42,7 +42,7 @@ public class ExampleParallel2D {
       IParallelContext pc = this.getParallelContext();
       // Use the serialPrint method to output the rank of this task
       pc.serialPrint("Yo from task " + pc.rank());
-      int[] shape = new int[] { 1, 113, 255 };
+      int[] shape = new int[] { 515, 113, 255 };
       int[] dtypes = new int[] { Decomposition.NONE, Decomposition.BLOCK, Decomposition.BLOCK };
       int[] tshape = DistributedArray.getTransposeShape(pc, 3, shape, dtypes );
       //int[] tshape = shape.clone();
