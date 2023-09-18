@@ -164,7 +164,7 @@ public class TaskTranspose {
       sio.writeFrame(ipos,shape[1]);
     }
     sio.close();
-    String[] args = new String[] { inPath, tilePath, outPath, "15", "15", "0" };
+    String[] args = new String[] { inPath, tilePath, outPath, "14", "14", "0" };
     mainArgs(args);
     sio = new Seisio(outPath);
     sio.open("r");
@@ -174,8 +174,6 @@ public class TaskTranspose {
     while (pos.hasNext()) {
       int[] ipos = pos.next();
       sio.readFrame(ipos);
-      //System.out.println("pos " + Arrays.toString(ipos) + " trcs[0][0] " + trcs[0][0] + " trcs[224][0] " + trcs[224][0] );
-      
       for (int j=0; j<shape[1]; j++) {
         ipos[1] = j;
         float val = 1000*ipos[1] + ipos[2] + ipos[3];
