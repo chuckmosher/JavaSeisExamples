@@ -1,4 +1,4 @@
-package org.javaseis.examples.cloud.aws;
+package org.javaseis.examples.cloud.aws.lambda;
 
 public class JscLambdaOutput {
   public int frame;

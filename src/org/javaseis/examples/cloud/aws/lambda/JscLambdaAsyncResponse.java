@@ -1,4 +1,4 @@
-package org.javaseis.examples.cloud.aws;
+package org.javaseis.examples.cloud.aws.lambda;
 
 import java.nio.charset.StandardCharsets;
 
