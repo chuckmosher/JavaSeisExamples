@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.AmazonS3;
 
 /**
  * Example implementation of using AWS S3 Object Storage to hold traces and
- * headers for a SeisSpace JavaSeis dataset. Existing machinery and SeisSpace
+ * headers for a JavaSeis Cloud dataset. Existing machinery and SeisSpace
  * code is used to manage metadata, grid and header definitions, and so on.
  * <p>
  * Current implementation supports up to 6 dimensions.
