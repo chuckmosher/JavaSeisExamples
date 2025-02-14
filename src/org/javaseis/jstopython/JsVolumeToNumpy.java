@@ -1,68 +1,76 @@
 package org.javaseis.jstopython;
 
-import java.io.DataOutputStream;
 import java.io.FileOutputStream;
-import java.util.Iterator;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.javaseis.io.Seisio;
-import org.javaseis.parset.ParameterSetIO;
 import org.javaseis.util.SeisException;
-
-import edu.mines.jtk.util.ParameterSet;
 
 public class JsVolumeToNumpy {
 
   /**
    * @param args
-   * @throws SeisException 
+   * @throws SeisException
    */
-  public static void main(String[] args) throws SeisException {    
+  public static void main(String[] args) {
+    try {
+      jsVolumeToNumpy(args);
+    } catch (SeisException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
 
-    // Convert arguments to a ParameterSet object for easy access
-    ParameterSet parset = ParameterSetIO.argsToParameters( args );
-    // Get path name for new dataset - default to "jsCreateTest" in User.home
-    String inPath = parset.getString("inPath", "none" );
-    String outPath = parset.getString("outPath", "none" );
-    System.out.println("Convert JavaSeis Volume to Numpy 3D array" +
-        "\n  Input Path: " + inPath +
-        "\n  Output path: " + outPath );
-    if (inPath.compareTo("none") == 0) throw new SeisException("Parameter inPath is missing");
-    if (outPath.compareTo("none") == 0) throw new SeisException("Parameter outPath is missing");
+  public static void jsVolumeToNumpy(String[] args) throws SeisException {
+    String inPath = args[0];
+    String outPath = args[1];
+    System.out.println(
+        "Convert JavaSeis Volume to Numpy 3D array" + "\n  Input Path: " + inPath + "\n  Output path: " + outPath);
     // Attempt to open input
     Seisio sio = null;
     try {
-      sio = new Seisio( inPath );
+      sio = new Seisio(inPath);
       sio.open("r");
     } catch (Exception e) {
       e.printStackTrace();
-      throw new SeisException("Could not open inPath=" + inPath,e.getCause());
+      throw new SeisException("Could not open inPath=" + inPath, e.getCause());
     }
     long[] shape = sio.getGridDefinition().getAxisLengths();
     // Open output file and write shape
 
-    try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(outPath))) {
-      dos.writeInt((int) shape[0]); // Save first dimension
-      dos.writeInt((int) shape[1]); // Save second dimension
-      dos.writeInt((int) shape[2]); // Save third dimension
-      // Get the trace array and iterator for frames
-      float[][] trc = sio.getTraceDataArray();
-      Iterator<int[]> frames = sio.frameIterator();
-      double sum = 0;
-      // Loop over frames and write to disk
-      while (frames.hasNext()) {
-        frames.next();
-        for (int j=0; j<shape[1]; j++) {
-          for (int i=0; i<shape[0]; i++) {
-            dos.writeFloat(trc[j][i]);
-            sum += trc[j][i] * trc[j][i];
+    try (FileOutputStream fos = new FileOutputStream(outPath)) {
+      // Create ByteBuffer with native endian
+      ByteBuffer buffer = ByteBuffer.allocate((int) (4 * shape[0] * shape[1] * shape[2] + 16));  // 4 bytes per float
+      buffer.order(ByteOrder.nativeOrder());  // Set the buffer to native endian order
+      
+      // Write the shape (z, y, x) as integers
+      buffer.putInt((int)shape[0]);
+      buffer.putInt((int)shape[1]);
+      buffer.putInt((int)shape[2]);
+      
+      // Write the 3D array of floats
+      int[] pos = new int[4];
+      double rms = 0;
+      float[][] trcs = sio.getTraceDataArray();
+      for (int k = 0; k < shape[2]; k++) {
+        pos[2] = k;
+        sio.readFrame(pos);
+        for (int j = 0; j < shape[1]; j++) {
+          for (int i = 0; i < shape[0]; i++) {
+            buffer.putFloat(trcs[j][i]);
+            rms += trcs[j][i] * trcs[j][i];
           }
         }
       }
-      // Write RMS value as a check
-      float rms = (float)(Math.sqrt(sum/(shape[0]*shape[1]*shape[2])));
-      dos.writeFloat( rms );
-      System.out.println("3D float array written with RMS = : " + rms);
-      dos.close();
+      rms = Math.sqrt(rms/(shape[0]*shape[1]*shape[2]));
+      // Write the RMS value
+      buffer.putFloat((float)rms);
+      
+      // Write the buffer contents to the file
+      fos.write(buffer.array());
+      fos.close();  
+      System.out.println("Conversion complete: rms = " + rms);
     } catch (Exception e) {
       e.printStackTrace();
       System.err.println("Conversion failed");
