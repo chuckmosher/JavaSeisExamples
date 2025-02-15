@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pylops
-from pycsalsa.sparsity import FISTA
+from pylops import Restriction, Gradient
+from pylops.optimization.sparsity import FISTA
 from scipy.interpolate import griddata
 
 # Step 1: Generate a synthetic elevation model
@@ -27,13 +27,23 @@ def sample_transects(X, Y, elevation, num_transects=15, num_points=200):
 def bilinear_interpolation(X, Y, x_samples, y_samples, z_samples):
     return griddata((x_samples, y_samples), z_samples, (X, Y), method='linear')
 
-# Step 4: Apply FISTA + TV reconstruction
+# Step 4: Apply FISTA + TV reconstruction using PyLops
 def fista_tv_reconstruction(grid_size, x_samples, y_samples, z_samples, lambda_tv=0.1, niter=200):
-    R = pylops.Restriction(np.prod(grid_size), np.ravel_multi_index(((y_samples * (grid_size[0] - 1)).astype(int),
-                                                                     (x_samples * (grid_size[1] - 1)).astype(int)), grid_size))
+    # Create restriction operator
+    coords = np.column_stack((y_samples * (grid_size[0] - 1), x_samples * (grid_size[1] - 1)))
+    idx = np.ravel_multi_index(coords.T.astype(int), grid_size)
+    R = Restriction(np.prod(grid_size), idx)
+
+    # Create gradient operator
+    G = Gradient(dims=grid_size)
+
+    # Observed data
+    d = z_samples
+
+    # FISTA solver
     x0 = np.zeros(np.prod(grid_size))
-    reconstructed = FISTA(R, z_samples, x0, lmbda=lambda_tv, niter=niter).reshape(grid_size)
-    return reconstructed
+    reconstructed, _ = FISTA(R, d, G, eps=1e-3, niter=niter, tol=1e-4, x0=x0, lmbda=lambda_tv, show=True)
+    return reconstructed.reshape(grid_size)
 
 # Step 5: Visualization
 def visualize_results(elevation, x_samples, y_samples, bilinear_reconstructed, fista_reconstructed):
@@ -49,7 +59,7 @@ def visualize_results(elevation, x_samples, y_samples, bilinear_reconstructed, f
 
 # Main Execution
 def main():
-    grid_size = (100, 200)  # Define grid size (smaller for testing)
+    grid_size = (100, 200)  # Define grid size
     X, Y, elevation = generate_elevation(grid_size)
     x_samples, y_samples, z_samples = sample_transects(X, Y, elevation)
     bilinear_reconstructed = bilinear_interpolation(X, Y, x_samples, y_samples, z_samples)

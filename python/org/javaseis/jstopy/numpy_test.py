@@ -10,17 +10,17 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
 # Read binary file
-with open("/Users/chuck/Dropbox/MoMacMo/Projects/TAMU_2025/TestData/testData.bin", "rb") as f:
+with open("/home/chuck/TestData.bin", "rb") as f:
     # Read dimensions (3 integers as big-endian)
-    shape = struct.unpack("iii", f.read(12))  # '>iii' = 3 big-endian 32-bit integers
-    z, y, x = shape  # Extract dimensions correctly
+    shape = struct.unpack("iii", f.read(12))  # '>iii' = 3 native 32-bit integers
+    z, x, y = shape  # Extract dimensions correctly
 
-    # Read the 3D float array as big-endian and reshape
+    # Read the 3D float array and reshape
     num_elements = z * y * x  # Total number of floats in the array
-    data = np.frombuffer(f.read(num_elements * 4), dtype="f4").reshape(z, y, x)
+    data = np.frombuffer(f.read(num_elements * 4), dtype="f4").reshape(y, x, z)
 
-    # Read the final RMS value (one more big-endian float)
-    rms = struct.unpack("f", f.read(4))[0]  # '>f' = big-endian 32-bit float
+    # Read the final RMS value (one more float)
+    rms = struct.unpack("f", f.read(4))[0]  # '>f' = 32-bit float
 
 print("Loaded 3D array shape:", data.shape)
 print("Computed RMS:", np.sqrt(np.mean(data**2)))  # Compute RMS from loaded data
