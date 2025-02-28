@@ -1,5 +1,7 @@
 import numpy as np
 import pylops
+import matplotlib
+matplotlib.use("Qt5Agg")  # or "Qt5Agg" if you have PyQt installed
 import matplotlib.pyplot as plt
 import os
 from scipy.fftpack import fft2, ifft2

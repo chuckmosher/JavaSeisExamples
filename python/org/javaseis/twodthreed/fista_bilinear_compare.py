@@ -59,7 +59,7 @@ def visualize_results(elevation, x_samples, y_samples, bilinear_reconstructed, f
 
 # Main Execution
 def main():
-    grid_size = (100, 200)  # Define grid size
+    grid_size = (200, 200)  # Define grid size
     X, Y, elevation = generate_elevation(grid_size)
     x_samples, y_samples, z_samples = sample_transects(X, Y, elevation)
     bilinear_reconstructed = bilinear_interpolation(X, Y, x_samples, y_samples, z_samples)

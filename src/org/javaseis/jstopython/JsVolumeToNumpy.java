@@ -41,18 +41,15 @@ public class JsVolumeToNumpy {
 
     try (FileOutputStream fos = new FileOutputStream(outPath)) {
       // Create ByteBuffer with native endian
-      ByteBuffer buffer = ByteBuffer.allocate((int) (4 * shape[0] * shape[1] * shape[2] + 16));  // 4 bytes per float
+      ByteBuffer buffer = ByteBuffer.allocate((int) (4 * shape[0] * shape[1]));
       buffer.order(ByteOrder.nativeOrder());  // Set the buffer to native endian order
       
-      // Write the shape (z, y, x) as integers
-      buffer.putInt((int)shape[0]);
-      buffer.putInt((int)shape[1]);
-      buffer.putInt((int)shape[2]);
-      
-      // Write the 3D array of floats
+      // Loop and write frames
       int[] pos = new int[4];
       double rms = 0;
       float[][] trcs = sio.getTraceDataArray();
+      for (int m=0; m<shape[3]; m++) {
+    	  pos[3] = m;
       for (int k = 0; k < shape[2]; k++) {
         pos[2] = k;
         sio.readFrame(pos);
@@ -62,13 +59,10 @@ public class JsVolumeToNumpy {
             rms += trcs[j][i] * trcs[j][i];
           }
         }
+        fos.write(buffer.array());
+        buffer.flip();
       }
-      rms = Math.sqrt(rms/(shape[0]*shape[1]*shape[2]));
-      // Write the RMS value
-      buffer.putFloat((float)rms);
-      
-      // Write the buffer contents to the file
-      fos.write(buffer.array());
+      }
       fos.close();  
       System.out.println("Conversion complete: rms = " + rms);
     } catch (Exception e) {

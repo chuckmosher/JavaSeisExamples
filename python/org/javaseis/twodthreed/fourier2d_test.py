@@ -1,5 +1,7 @@
 import numpy as np
 import pylops
+import matplotlib
+matplotlib.use("Qt5Agg")  # or "Qt5Agg" if you have PyQt installed
 import matplotlib.pyplot as plt
 import os
 from scipy.fftpack import fft2, ifft2
@@ -25,11 +27,11 @@ class FourierOperator(LinearOperator):
 
     def _matvec(self, x):
         self.matvec_count += 1  # Fix: Track matvec calls
-        return (self.scale_factor * fft2(x.reshape(self.m, self.n))).flatten()
+        return (self.scale_factor * np.fft.fft2(x.reshape(self.m, self.n))).flatten()
     
     def _rmatvec(self, y):
         self.rmatvec_count += 1  # Fix: Track rmatvec calls
-        return (self.scale_factor * (self.m * self.n) * ifft2(y.reshape(self.m, self.n))).flatten()  # Correct scaling
+        return (self.scale_factor * (self.m * self.n) * np.fft.ifft2(y.reshape(self.m, self.n))).flatten()  # Correct scaling
 
 # Soft-thresholding function for complex values
 def soft_thresholding(z, threshold):
