@@ -34,13 +34,13 @@ def extract_tracks_from_kml(kml_file):
     return tracks
 
 # Load KML file
-kml_file = "/home/chuck/Dropbox/Vector Minerals/tables/WellTracks.kml"  # Replace with your actual KML file path
+kml_file = "/home/chuck/Dropbox/Vector Minerals/tables/3D_Seismic.kml"  # Replace with your actual KML file path
 
 # Extract and convert tracks
 tracks_data = extract_tracks_from_kml(kml_file)
 
 # Convert to DataFrame and save
 df_tracks = pd.DataFrame(tracks_data, columns=["Track", "Point", "X", "Y"])
-df_tracks.to_csv("converted_tracks.csv", index=False)
+df_tracks.to_csv("/home/chuck/Dropbox/Vector Minerals/tables/3D_Seismic.csv", index=False)
 
 print("Conversion complete! Saved as 'converted_tracks.csv'")

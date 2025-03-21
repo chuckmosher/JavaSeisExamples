@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from org.javaseis.operators.restriction_operator import RestrictionOperator
+from org.javaseis.operators.restriction_operator import RestrictionOperatorNearest
 
 def test_restriction_operator():
     grid_x = np.linspace(0, 100, 50)
@@ -11,7 +11,7 @@ def test_restriction_operator():
     sample_mask = np.random.rand(*Z_true.shape) < 0.5  # 50% subsampling
     sample_x, sample_y = X[sample_mask], Y[sample_mask]
 
-    R = RestrictionOperator(grid_x, grid_y, sample_x, sample_y, use_gpu=False)
+    R = RestrictionOperatorNearest(grid_x, grid_y, sample_x, sample_y, use_gpu=False)
     d = R @ Z_true.ravel()
     Z_recon = R.T @ d
 

@@ -1,43 +1,10 @@
 import numpy as np
-import pylops
 import matplotlib
 matplotlib.use("Qt5Agg")  # or "Qt5Agg" if you have PyQt installed
-import matplotlib.pyplot as plt
-import os
-from scipy.fftpack import fft2, ifft2
-from pylops import LinearOperator
+import matplotlib.pyplot as plt;
+from org.javaseis.twodthreed.operators import fourier_operator
+from org.javaseis.twodthreed.synthdata import generate_elevation
 
-# Generate elevation model (replaces random numbers in x_true)
-def generate_elevation(shape=(10, 10)):
-    x = np.linspace(0, 1, shape[1])
-    y = np.linspace(0, 1, shape[0])
-    X, Y = np.meshgrid(x, y)
-    elevation = np.sin(5 * X) * np.cos(3 * Y) + 0.5 * np.sin(8 * X * Y)
-    return elevation
-
-# Define 2D Fourier Transform operator with symmetric scaling
-class FourierOperator(LinearOperator):
-    def __init__(self, shape):
-        self.m, self.n = shape
-        self.shape = (self.m * self.n, self.m * self.n)
-        self.dtype = np.complex64
-        self.scale_factor = 1 / np.sqrt(self.m * self.n)  # Symmetric scaling
-        self.matvec_count = 0  # Fix: Add tracking for matvec calls
-        self.rmatvec_count = 0  # Fix: Add tracking for rmatvec calls
-
-    def _matvec(self, x):
-        self.matvec_count += 1  # Fix: Track matvec calls
-        return (self.scale_factor * np.fft.fft2(x.reshape(self.m, self.n))).flatten()
-    
-    def _rmatvec(self, y):
-        self.rmatvec_count += 1  # Fix: Track rmatvec calls
-        return (self.scale_factor * (self.m * self.n) * np.fft.ifft2(y.reshape(self.m, self.n))).flatten()  # Correct scaling
-
-# Soft-thresholding function for complex values
-def soft_thresholding(z, threshold):
-    magnitude = np.abs(z)
-    ratio = np.maximum(magnitude - threshold, 0) / (magnitude + 1e-10)  # Protect against division by zero
-    return z * ratio
 
 # Dot product test for Fourier Transform Operator
 def dot_product_test(operator, shape):
