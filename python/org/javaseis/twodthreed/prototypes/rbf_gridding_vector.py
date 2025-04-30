@@ -9,9 +9,9 @@ COLUMN_NAMES = ["HorizonName", "LineName", "X", "Y", "TrcNo", "ShotPt", "Z"]
 DATA_TYPES = {"X": float, "Y": float, "Z": float}
 
 # Define grid parameters (feet)
-GRID_ORIGIN = (683000, 385000)  # Lower-left corner (X, Y)
-GRID_UPPER_RIGHT = (694000, 400000)  # Upper-right corner (X, Y)
-GRID_SPACING = 25  # Grid cell size in feet
+GRID_ORIGIN = (681900, 383900)  # Lower-left corner (X, Y)
+GRID_UPPER_RIGHT = (695100, 401170)  # Upper-right corner (X, Y)
+GRID_SPACING = 55  # Grid cell size in feet
 
 # Compute grid dimensions
 Nx = int((GRID_UPPER_RIGHT[0] - GRID_ORIGIN[0]) / GRID_SPACING) + 1
@@ -69,8 +69,8 @@ def export_to_zmap(file_path, elevation_grid):
 
 # Main function to read, display, and interpolate transects
 def main():
-    file_path = "/home/chuck/NiobraraAuto.txt"  # Path to fixed-width file
-    output_zmap_file = "/data2/home/data/ODData/Vector/Export/Niobrara3dAuto.zmap"  # Output ZMAP file
+    file_path = "/home/chuck/Niobrara2dV4Bulk.txt"  # Path to fixed-width file
+    output_zmap_file = "/data2/home/data/ODData/Vector/Export/Niobrara3dV4.zmap"  # Output ZMAP file
     
     transect_data = read_transects_from_file(file_path)
     
