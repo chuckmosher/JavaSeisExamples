@@ -92,9 +92,6 @@ def main():
 
     args = parse_arguments()
 
-    data_root = "/data2/home/data/ODData"
-    survey_name = "Penobscot"
-
     bg = BinGrid(
         nx=482,
         ny=601,
@@ -107,7 +104,7 @@ def main():
         angle=90.0-62.39
     )
 
-    survey = Survey(survey_name, data_root)
+    survey = Survey(args.survey_name, args.data_root)
 
     gx, gy, z = get_transect_data(survey, bg, args.horizon2d)
 
